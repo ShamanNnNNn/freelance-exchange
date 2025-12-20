@@ -79,20 +79,30 @@
                     </form>
                 </div>
             </div>
-            <!-- Корзина -->
-            <div class="col-md-7">
-                <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow">
-                    <h3 class="text-center mb-4">Корзина</h3>
-                    <div class="container" id="cart-items-container">
-                        <!-- Разметка корзины -->
-                         {% include "carts/includes/included_cart.html" %}
-                        <!-- Закончилась разметка корзины -->
-                    </div>
-                    <a class="btn btn-dark" href="../orders/create_order.html">
-                        Оформить заказ
-                    </a>
-                </div>
-            </div>
+<!-- Замените текущий блок "Корзина" на этот: -->
+<div class="col-md-7">
+    <div class="bg-white p-4 mb-4 mx-2 rounded custom-shadow">
+        <h3 class="text-center mb-4">Действия</h3>
+        <div class="d-grid gap-3">
+            <!-- Кнопка создания нового заказа -->
+            <a href="{% url 'order:create' %}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Создать новый заказ
+            </a>
+            
+            <!-- Кнопка просмотра моих заказов -->
+            <a href="{% url 'order:list' %}" class="btn btn-outline-primary">
+                <i class="bi bi-list-ul"></i> Все мои заказы
+            </a>
+            
+            <!-- Кнопка для исполнителей (если нужна) -->
+            {% if user.profile.is_freelancer %}
+            <a href="#" class="btn btn-outline-success">
+                <i class="bi bi-briefcase"></i> Доступные заказы
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
             <!-- Оформленные заказы -->
             <div class="col-md-12">
                 <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow">

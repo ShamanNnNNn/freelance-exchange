@@ -60,8 +60,8 @@ def profile(request):
     }
     return render(request, 'users/profile.html', context)
 
-def users_cart(request):
-    return render(request, "users/users_cart.html")
+#def users_cart(request):
+    #return render(request, "users/users_cart.html")
 
 @login_required
 def logout(request):

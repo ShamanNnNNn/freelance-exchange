@@ -54,7 +54,7 @@
                         {% else %}
                         
                             <li class="nav-item">
-                                <a class="nav-link  text-white" href="{% url "user:users_cart" %}">Корзина</a>
+                                <a class="nav-link  text-white" href="#">Корзина</a>
                             </li>
                             <li class="nav-item dropdown ">
                                 <a class="nav-link dropdown-toggle text-white" href="#" role="button"
@@ -62,7 +62,7 @@
                                     Мой профиль
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item  text-white" href="carts/cart.html">Корзина</a></li>
+                                    <li><a class="dropdown-item  text-white" href="#">Корзина</a></li>
                                     {% if user.is_admin or user.is_staff %}
                                     <li><a class="dropdown-item  text-white" href="{% url "admin:index" %}">Админ панель</a></li><li>
                                     {% endif %}
@@ -124,7 +124,6 @@
                                 <h3 class="text-center mb-4">Корзина</h3>
                                 <div class="container" id="cart-items-container">
                                     <!-- Разметка корзины -->
-                                    {% include "carts/includes/included_cart.html" %}
                                     <!-- Закончилась разметка корзины -->
                                 </div>
                                 <a class="btn btn-dark" href="orders/create_order.html">
@@ -145,7 +144,7 @@
                 </div>
                 <div class="col-lg-10">
                     <!-- Контент на странице -->
-                     {% include "includes/notifications.html" %}
+                     <!--{% include "includes/notifications.html" %}-->
                     {% block content %}{% endblock %}
                 </div>
             </div>

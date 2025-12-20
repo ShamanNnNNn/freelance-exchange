@@ -1,0 +1,220 @@
+<!-- order/templates/order/order_list.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Мои заказы</h1>
+            <p class="text-muted mb-0">
+                Пользователь: <strong>{{ user.get_full_name|default:user.username }}</strong>
+                | Всего заказов: <strong>{{ all_count }}</strong>
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'order:create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Создать новый заказ
+            </a>
+        </div>
+    </div>
+    
+    <!-- Дебаг информация (можно убрать после проверки) -->
+    <div class="alert alert-info mb-4">
+        <small>
+            <strong>Отображаются заказы где вы:</strong><br>
+            1. Заказчик ({{ user_orders_customer_count }})<br>
+            2. Исполнитель ({{ user_orders_freelancer_count }})<br>
+            <strong>Всего: {{ all_count }}</strong>
+        </small>
+    </div>
+    
+    <!-- Фильтры -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="role" class="form-label">Моя роль</label>
+                    <select name="role" id="role" class="form-select">
+                        <option value="">Все роли</option>
+                        <option value="customer" {% if request.GET.role == 'customer' %}selected{% endif %}>Я заказчик</option>
+                        <option value="freelancer" {% if request.GET.role == 'freelancer' %}selected{% endif %}>Я исполнитель</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Статус</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">Все статусы</option>
+                        <option value="open" {% if request.GET.status == 'open' %}selected{% endif %}>Открыт</option>
+                        <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>В работе</option>
+                        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Завершен</option>
+                        <option value="canceled" {% if request.GET.status == 'canceled' %}selected{% endif %}>Отменен</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="category" class="form-label">Категория</label>
+                    <select name="category" id="category" class="form-select">
+                        <option value="">Все категории</option>
+                        <option value="web" {% if request.GET.category == 'web' %}selected{% endif %}>Веб-разработка</option>
+                        <option value="mobile" {% if request.GET.category == 'mobile' %}selected{% endif %}>Мобильная разработка</option>
+                        <option value="design" {% if request.GET.category == 'design' %}selected{% endif %}>Дизайн</option>
+                        <option value="marketing" {% if request.GET.category == 'marketing' %}selected{% endif %}>Маркетинг</option>
+                        <option value="writing" {% if request.GET.category == 'writing' %}selected{% endif %}>Копирайтинг</option>
+                        <option value="translation" {% if request.GET.category == 'translation' %}selected{% endif %}>Переводы</option>
+                        <option value="other" {% if request.GET.category == 'other' %}selected{% endif %}>Другое</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="d-grid w-100">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> Применить
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Список заказов -->
+    {% if orders %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Моя роль</th>
+                        <th>Категория</th>
+                        <th>Статус</th>
+                        <th>Бюджет</th>
+                        <th>Срок</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td>
+                            <a href="{% url 'order:detail' order.pk %}" class="text-decoration-none">
+                                {{ order.title|truncatechars:40 }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if order.user_role == 'customer' %}info{% else %}success{% endif %}">
+                                {% if order.user_role == 'customer' %}
+                                    Заказчик
+                                {% else %}
+                                    Исполнитель
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>{{ order.get_category_display }}</td>
+                        <td>
+                            <span class="badge bg-{% if order.status == 'open' %}primary{% elif order.status == 'in_progress' %}warning{% elif order.status == 'completed' %}success{% else %}secondary{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ order.budget }} {{ order.get_currency_display }}</td>
+                        <td>{{ order.deadline|date:"d.m.Y" }}</td>
+                        <td>
+                            <a href="{% url 'order:detail' order.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Пагинация -->
+        {% if is_paginated %}
+        <nav aria-label="Навигация по страницам" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            &laquo; Первая
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            Назад
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo; Первая</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">Назад</span>
+                    </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            Вперед
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            Последняя &raquo;
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Вперед</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">Последняя &raquo;</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+    {% else %}
+        <!-- Нет заказов -->
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+            </div>
+            <h3 class="text-muted">У вас пока нет заказов</h3>
+            <p class="text-muted mb-4">
+                {% if request.GET.status or request.GET.category or request.GET.role %}
+                    Попробуйте изменить параметры фильтрации
+                {% else %}
+                    Создайте свой первый заказ или найдите задания для выполнения
+                {% endif %}
+            </p>
+            <a href="{% url 'order:create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Создать заказ
+            </a>
+            {% if request.GET.status or request.GET.category or request.GET.role %}
+                <a href="{% url 'order:list' %}" class="btn btn-outline-secondary ms-2">
+                    <i class="bi bi-x-circle"></i> Сбросить фильтры
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
