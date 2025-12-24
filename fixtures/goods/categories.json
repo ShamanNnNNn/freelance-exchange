@@ -3,7 +3,7 @@
         "model": "goods.categories",
         "pk": 5,
         "fields": {
-            "name": "Все товары",
+            "name": "Все",
             "slug": "all"
         }
     },

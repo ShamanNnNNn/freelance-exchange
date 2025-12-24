@@ -1,38 +1,20 @@
-<!-- order/templates/order/order_list.html -->
 {% extends "base.html" %}
 {% load static %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-4">
+    <!-- Заголовок и кнопка создания -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1>Мои заказы</h1>
-            <p class="text-muted mb-0">
-                Пользователь: <strong>{{ user.get_full_name|default:user.username }}</strong>
-                | Всего заказов: <strong>{{ all_count }}</strong>
-            </p>
-        </div>
-        <div>
-            <a href="{% url 'order:create' %}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Создать новый заказ
-            </a>
-        </div>
-    </div>
-    
-    <!-- Дебаг информация (можно убрать после проверки) -->
-    <div class="alert alert-info mb-4">
-        <small>
-            <strong>Отображаются заказы где вы:</strong><br>
-            1. Заказчик ({{ user_orders_customer_count }})<br>
-            2. Исполнитель ({{ user_orders_freelancer_count }})<br>
-            <strong>Всего: {{ all_count }}</strong>
-        </small>
+        <h1>Мои заказы</h1>
+        <a href="{% url 'order:create' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Создать новый заказ
+        </a>
     </div>
     
     <!-- Фильтры -->
     <div class="card shadow mb-4">
         <div class="card-body">
-            <form method="get" class="row g-3">
+            <form method="get" id="filterForm" class="row g-3">
                 <div class="col-md-3">
                     <label for="role" class="form-label">Моя роль</label>
                     <select name="role" id="role" class="form-select">
@@ -72,149 +54,304 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-funnel"></i> Применить
                         </button>
+                        {% if request.GET.role or request.GET.status or request.GET.category %}
+                        <a href="{% url 'order:list' %}" class="btn btn-outline-secondary mt-2">
+                            <i class="bi bi-x-circle"></i> Сбросить
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             </form>
         </div>
     </div>
     
-    <!-- Список заказов -->
-    {% if orders %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>Название</th>
-                        <th>Моя роль</th>
-                        <th>Категория</th>
-                        <th>Статус</th>
-                        <th>Бюджет</th>
-                        <th>Срок</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for order in orders %}
-                    <tr>
-                        <td>{{ order.id }}</td>
-                        <td>
-                            <a href="{% url 'order:detail' order.pk %}" class="text-decoration-none">
-                                {{ order.title|truncatechars:40 }}
-                            </a>
-                        </td>
-                        <td>
-                            <span class="badge bg-{% if order.user_role == 'customer' %}info{% else %}success{% endif %}">
-                                {% if order.user_role == 'customer' %}
-                                    Заказчик
-                                {% else %}
-                                    Исполнитель
-                                {% endif %}
-                            </span>
-                        </td>
-                        <td>{{ order.get_category_display }}</td>
-                        <td>
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <div class="display-6 text-primary">{{ all_count|default:0 }}</div>
+                    <div class="text-muted">Всего заказов</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <div class="display-6 text-primary">{{ open_count|default:0 }}</div>
+                    <div class="text-muted">Открытые</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <div class="display-6 text-warning">{{ in_progress_count|default:0 }}</div>
+                    <div class="text-muted">В работе</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <div class="display-6 text-success">{{ completed_count|default:0 }}</div>
+                    <div class="text-muted">Завершенные</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Быстрые фильтры -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'order:list' %}" 
+                   class="btn btn-sm {% if not request.GET.status %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    Все ({{ all_count|default:0 }})
+                </a>
+                <a href="{% url 'order:list' %}?status=open" 
+                   class="btn btn-sm {% if request.GET.status == 'open' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    Открытые ({{ open_count|default:0 }})
+                </a>
+                <a href="{% url 'order:list' %}?status=in_progress" 
+                   class="btn btn-sm {% if request.GET.status == 'in_progress' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                    В работе ({{ in_progress_count|default:0 }})
+                </a>
+                <a href="{% url 'order:list' %}?status=completed" 
+                   class="btn btn-sm {% if request.GET.status == 'completed' %}btn-success{% else %}btn-outline-success{% endif %}">
+                    Завершенные ({{ completed_count|default:0 }})
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Вывод заказов -->
+    <div class="row">
+        {% if orders %}
+            {% for order in orders %}
+                <!-- Карточка заказа -->
+                <div class="col-lg-4 col-md-6 p-4">
+                    <div class="card border-primary rounded custom-shadow">
+                        <div class="card-header bg-transparent border-primary d-flex justify-content-between align-items-center">
                             <span class="badge bg-{% if order.status == 'open' %}primary{% elif order.status == 'in_progress' %}warning{% elif order.status == 'completed' %}success{% else %}secondary{% endif %}">
                                 {{ order.get_status_display }}
                             </span>
-                        </td>
-                        <td>{{ order.budget }} {{ order.get_currency_display }}</td>
-                        <td>{{ order.deadline|date:"d.m.Y" }}</td>
-                        <td>
-                            <a href="{% url 'order:detail' order.pk %}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-eye"></i>
+                            <span class="badge bg-{% if order.user_role == 'customer' %}info{% else %}success{% endif %}">
+                                {% if order.user_role == 'customer' %}Я заказчик{% else %}Я исполнитель{% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="card-body">
+                            <a href="{% url 'order:detail' order.pk %}">
+                                <h5 class="card-title">
+                                    {{ order.title|truncatechars:40 }}
+                                </h5>
                             </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        
-        <!-- Пагинация -->
-        {% if is_paginated %}
-        <nav aria-label="Навигация по страницам" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
+                            
+                            <p class="card-text text-muted">
+                                {{ order.description|truncatechars:100 }}
+                            </p>
+                            
+                            <!-- Теги -->
+                            {% if order.tags %}
+                                <div class="mb-3">
+                                    {% for tag in order.tags|slice:":3" %}
+                                        <span class="badge bg-light text-dark border">{{ tag|cut:"," }}</span>
+                                    {% endfor %}
+                                    {% if order.tags|length > 3 %}
+                                        <span class="badge bg-light text-dark border">+{{ order.tags|length|add:"-3" }}</span>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Информация о заказе -->
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Категория</small>
+                                    <div><strong>{{ order.get_category_display }}</strong></div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Бюджет</small>
+                                    <div><strong>{{ order.budget }} {{ order.get_currency_display }}</strong></div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Срок до</small>
+                                    <div><strong>{{ order.deadline|date:"d.m.Y" }}</strong></div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Создан</small>
+                                    <div><strong>{{ order.created_at|date:"d.m.Y" }}</strong></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Кнопки действий -->
+                            <div class="d-flex justify-content-between mt-3">
+                                <a href="{% url 'order:detail' order.pk %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i> Подробнее
+                                </a>
+                                
+                                {% if order.customer == user and order.status == 'open' %}
+                                    <a href="{% url 'order:edit' order.pk %}" class="btn btn-outline-warning btn-sm">
+                                        <i class="bi bi-pencil"></i> Редактировать
+                                    </a>
+                                {% endif %}
+                                
+                                {% if user != order.customer and order.status == 'open' %}
+                                    <a href="#" class="btn btn-success btn-sm">
+                                        <i class="bi bi-check-circle"></i> Откликнуться
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <!-- Если нет заказов -->
+            <div class="col-12 text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                </div>
+                <h3 class="text-muted">Заказов не найдено</h3>
+                <p class="text-muted mb-4">
+                    {% if request.GET.status or request.GET.category or request.GET.role %}
+                        Попробуйте изменить параметры фильтрации
+                    {% else %}
+                        У вас пока нет заказов. Создайте свой первый заказ!
+                    {% endif %}
+                </p>
+                <a href="{% url 'order:create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Создать заказ
+                </a>
+                {% if request.GET.status or request.GET.category or request.GET.role %}
+                    <a href="{% url 'order:list' %}" class="btn btn-outline-secondary ms-2">
+                        <i class="bi bi-x-circle"></i> Сбросить фильтры
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Пагинация -->
+    {% if orders.has_other_pages %}
+        <nav aria-label="Навигация по страницам">
+            <ul class="pagination justify-content-center mt-4">
+                {% if orders.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                            &laquo; Первая
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                            Назад
+                        <a class="page-link" href="?page={{ orders.previous_page_number }}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                            &laquo; Назад
                         </a>
                     </li>
                 {% else %}
                     <li class="page-item disabled">
-                        <span class="page-link">&laquo; Первая</span>
-                    </li>
-                    <li class="page-item disabled">
-                        <span class="page-link">Назад</span>
+                        <span class="page-link">&laquo; Назад</span>
                     </li>
                 {% endif %}
                 
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
+                {% for num in orders.paginator.page_range %}
+                    {% if orders.number == num %}
                         <li class="page-item active">
                             <span class="page-link">{{ num }}</span>
                         </li>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    {% elif num > orders.number|add:'-3' and num < orders.number|add:'3' %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ num }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
                                 {{ num }}
                             </a>
                         </li>
                     {% endif %}
                 {% endfor %}
                 
-                {% if page_obj.has_next %}
+                {% if orders.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                            Вперед
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                            Последняя &raquo;
+                        <a class="page-link" href="?page={{ orders.next_page_number }}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                            Вперед &raquo;
                         </a>
                     </li>
                 {% else %}
                     <li class="page-item disabled">
-                        <span class="page-link">Вперед</span>
-                    </li>
-                    <li class="page-item disabled">
-                        <span class="page-link">Последняя &raquo;</span>
+                        <span class="page-link">Вперед &raquo;</span>
                     </li>
                 {% endif %}
             </ul>
         </nav>
-        {% endif %}
-        
-    {% else %}
-        <!-- Нет заказов -->
-        <div class="text-center py-5">
-            <div class="mb-4">
-                <i class="bi bi-inbox display-1 text-muted"></i>
-            </div>
-            <h3 class="text-muted">У вас пока нет заказов</h3>
-            <p class="text-muted mb-4">
-                {% if request.GET.status or request.GET.category or request.GET.role %}
-                    Попробуйте изменить параметры фильтрации
-                {% else %}
-                    Создайте свой первый заказ или найдите задания для выполнения
-                {% endif %}
-            </p>
-            <a href="{% url 'order:create' %}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Создать заказ
-            </a>
-            {% if request.GET.status or request.GET.category or request.GET.role %}
-                <a href="{% url 'order:list' %}" class="btn btn-outline-secondary ms-2">
-                    <i class="bi bi-x-circle"></i> Сбросить фильтры
-                </a>
-            {% endif %}
-        </div>
     {% endif %}
 </div>
+
+<style>
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.card-title a {
+    text-decoration: none;
+    color: #212529;
+}
+
+.card-title a:hover {
+    color: #0d6efd;
+}
+
+.custom-shadow {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.badge {
+    font-size: 0.7em;
+    padding: 0.4em 0.8em;
+}
+
+.page-link {
+    color: #0d6efd;
+}
+
+.page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Автоматическая отправка формы при изменении селектов
+    const roleSelect = document.getElementById('role');
+    const statusSelect = document.getElementById('status');
+    const categorySelect = document.getElementById('category');
+    
+    if (roleSelect) {
+        roleSelect.addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    }
+    
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    }
+    
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block footer %}
+<footer class="py-4 bg-dark">
+    <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; Home Python Hub Studio 2023</p>
+    </div>
+</footer>
 {% endblock %}

@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% load static %}
+{% load goods_tags %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Мои заказы</h1>
+    
+    <!-- Статистика моих заказов -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <div class="display-6 text-primary">{{ my_all_count|default:0 }}</div>
+                    <div class="text-muted">Всего</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <div class="display-6 text-primary">{{ my_open_count|default:0 }}</div>
+                    <div class="text-muted">Открытые</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <div class="display-6 text-warning">{{ my_in_progress_count|default:0 }}</div>
+                    <div class="text-muted">В работе</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <div class="display-6 text-success">{{ my_completed_count|default:0 }}</div>
+                    <div class="text-muted">Завершенные</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Простые фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Роль</label>
+                    <select class="form-select" onchange="location = this.value;">
+                        <option value="?">Все роли</option>
+                        <option value="?role=customer" {% if request.GET.role == 'customer' %}selected{% endif %}>
+                            Я заказчик
+                        </option>
+                        <option value="?role=freelancer" {% if request.GET.role == 'freelancer' %}selected{% endif %}>
+                            Я исполнитель
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Статус</label>
+                    <select class="form-select" onchange="location = this.value;">
+                        <option value="?">Все статусы</option>
+                        <option value="?status=open" {% if request.GET.status == 'open' %}selected{% endif %}>
+                            Открытые
+                        </option>
+                        <option value="?status=in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>
+                            В работе
+                        </option>
+                        <option value="?status=completed" {% if request.GET.status == 'completed' %}selected{% endif %}>
+                            Завершенные
+                        </option>
+                        <option value="?status=canceled" {% if request.GET.status == 'canceled' %}selected{% endif %}>
+                            Отмененные
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Категория</label>
+                    <select class="form-select" onchange="location = this.value;">
+                        <option value="?">Все категории</option>
+                        <option value="?category=web" {% if request.GET.category == 'web' %}selected{% endif %}>
+                            Веб-разработка
+                        </option>
+                        <option value="?category=mobile" {% if request.GET.category == 'mobile' %}selected{% endif %}>
+                            Мобильная разработка
+                        </option>
+                        <option value="?category=design" {% if request.GET.category == 'design' %}selected{% endif %}>
+                            Дизайн
+                        </option>
+                        <option value="?category=marketing" {% if request.GET.category == 'marketing' %}selected{% endif %}>
+                            Маркетинг
+                        </option>
+                        <option value="?category=writing" {% if request.GET.category == 'writing' %}selected{% endif %}>
+                            Копирайтинг
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ссылка на все заказы -->
+    <div class="mb-4">
+        <a href="{% url 'order:all_orders' %}" class="btn btn-outline-primary">
+            <i class="bi bi-list"></i> Посмотреть все заказы на бирже
+        </a>
+        <a href="{% url 'order:create' %}" class="btn btn-primary ms-2">
+            <i class="bi bi-plus-circle"></i> Создать новый заказ
+        </a>
+        {% if request.GET.role or request.GET.status or request.GET.category %}
+            <a href="{% url 'order:my_orders' %}" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-x-circle"></i> Сбросить фильтры
+            </a>
+        {% endif %}
+    </div>
+    
+    <!-- Вывод заказов -->
+    <div class="row">
+        {% for order in orders %}
+            <div class="col-lg-4 col-md-6 p-4">
+                <div class="card border-primary rounded custom-shadow">
+                    <div class="card-header bg-transparent border-primary d-flex justify-content-between">
+                        <span class="badge bg-{% if order.status == 'open' %}primary{% elif order.status == 'in_progress' %}warning{% elif order.status == 'completed' %}success{% else %}secondary{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                        <span class="badge bg-{% if order.user_role == 'customer' %}info{% else %}success{% endif %}">
+                            {% if order.user_role == 'customer' %}Я заказчик{% else %}Я исполнитель{% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="card-body">
+                        <a href="{% url 'order:detail' order.pk %}">
+                            <h5 class="card-title">{{ order.title|truncatechars:40 }}</h5>
+                        </a>
+                        
+                        <p class="card-text text-muted">
+                            {{ order.description|truncatechars:100 }}
+                        </p>
+                        
+                        {% if order.tags %}
+                            <div class="mb-3">
+                                {% for tag in order.tags|slice:":3" %}
+                                    <span class="badge bg-light text-dark border">{{ tag|cut:"," }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Категория</small>
+                                <div><strong>{{ order.get_category_display }}</strong></div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Бюджет</small>
+                                <div><strong>{{ order.budget }} {{ order.get_currency_display }}</strong></div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Срок до</small>
+                                <div><strong>{{ order.deadline|date:"d.m.Y" }}</strong></div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Создан</small>
+                                <div><strong>{{ order.created_at|date:"d.m.Y" }}</strong></div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="{% url 'order:detail' order.pk %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye"></i> Подробнее
+                            </a>
+                            
+                            {% if order.user_role == 'customer' and order.status == 'open' %}
+                                <a href="{% url 'order:edit' order.pk %}" class="btn btn-outline-warning btn-sm">
+                                    <i class="bi bi-pencil"></i> Редактировать
+                                </a>
+                            {% endif %}
+                            
+                            {% if order.status == 'in_progress' and order.user_role == 'freelancer' %}
+                                <form method="post" action="{% url 'order:complete' order.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="bi bi-check-circle"></i> Завершить
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <h3 class="text-muted">У вас пока нет заказов</h3>
+                <p class="text-muted mb-4">
+                    {% if request.GET.role or request.GET.status or request.GET.category %}
+                        Попробуйте изменить параметры фильтрации
+                    {% else %}
+                        Создайте свой первый заказ или найдите подходящий на бирже!
+                    {% endif %}
+                </p>
+                <a href="{% url 'order:create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Создать заказ
+                </a>
+                <a href="{% url 'order:all_orders' %}" class="btn btn-outline-primary ms-2">
+                    <i class="bi bi-search"></i> Найти заказ
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Пагинация -->
+    {% if orders.has_other_pages %}
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center my-4">
+                <div class="custom-shadow d-flex">
+                    <li class="page-item {% if not orders.has_previous %}disabled{% endif %}">
+                        <a class="page-link" href="{% if orders.has_previous %}?{% change_params page=orders.previous_page_number %}{% else %}#{% endif %}">
+                            Назад
+                        </a>
+                    </li>
+                    
+                    {% for page in orders.paginator.page_range %}
+                        {% if page >= orders.number|add:-2 and page <= orders.number|add:2 %}
+                            <li class="page-item {% if orders.number == page %}active{% endif %}">
+                                <a class="page-link" href="?{% change_params page=page %}">{{ page }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <li class="page-item {% if not orders.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{% if orders.has_next %}?{% change_params page=orders.next_page_number %}{% else %}#{% endif %}">
+                            Далее
+                        </a>
+                    </li>
+                </div>
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+
+<style>
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.card-title a {
+    text-decoration: none;
+    color: #212529;
+}
+
+.card-title a:hover {
+    color: #0d6efd;
+}
+
+.custom-shadow {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.badge {
+    font-size: 0.7em;
+    padding: 0.4em 0.8em;
+}
+</style>
+{% endblock %}
+
+{% block footer %}
+<footer class="py-4 bg-dark">
+    <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; Home Python Hub Studio 2023</p>
+    </div>
+</footer>
+{% endblock %}

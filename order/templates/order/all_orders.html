@@ -15,34 +15,36 @@
             <div class="p-3">
                 <!-- Фильтр по участию -->
                 <p class="text-white">Тип заказов:</p>
-<div class="form-check text-white mb-2">
-    <input class="form-check-input" type="radio" name="participation" id="participation_all" value="" 
-           {% if not request.GET.participation %}checked{% endif %}>
-    <label class="form-check-label" for="participation_all">
-        Все заказы на бирже
-    </label>
-        </div>
-        <div class="form-check text-white mb-2">
-            <input class="form-check-input" type="radio" name="participation" id="participation_my_orders" value="my_orders" 
-                {% if request.GET.participation == 'my_orders' %}checked{% endif %}>
-            <label class="form-check-label" for="participation_my_orders">
-                Только мои заказы
-            </label>
-        </div>
-        <div class="form-check text-white mb-2">
-            <input class="form-check-input" type="radio" name="participation" id="participation_customer" value="customer" 
-                {% if request.GET.participation == 'customer' %}checked{% endif %}>
-            <label class="form-check-label" for="participation_customer">
-                Где я заказчик
-            </label>
-        </div>
-        <div class="form-check text-white mb-3">
-            <input class="form-check-input" type="radio" name="participation" id="participation_freelancer" value="freelancer" 
-                {% if request.GET.participation == 'freelancer' %}checked{% endif %}>
-            <label class="form-check-label" for="participation_freelancer">
-                Где я исполнитель
-            </label>
-        </div>
+                <div class="form-check text-white mb-2">
+                    <input class="form-check-input" type="radio" name="participation" id="participation_all" value="" 
+                           {% if not request.GET.participation %}checked{% endif %}>
+                    <label class="form-check-label" for="participation_all">
+                        Все заказы на бирже
+                    </label>
+                </div>
+                {% if user.is_authenticated %}
+                <div class="form-check text-white mb-2">
+                    <input class="form-check-input" type="radio" name="participation" id="participation_my_orders" value="my_orders" 
+                           {% if request.GET.participation == 'my_orders' %}checked{% endif %}>
+                    <label class="form-check-label" for="participation_my_orders">
+                        Только мои заказы
+                    </label>
+                </div>
+                <div class="form-check text-white mb-2">
+                    <input class="form-check-input" type="radio" name="participation" id="participation_customer" value="customer" 
+                           {% if request.GET.participation == 'customer' %}checked{% endif %}>
+                    <label class="form-check-label" for="participation_customer">
+                        Где я заказчик
+                    </label>
+                </div>
+                <div class="form-check text-white mb-3">
+                    <input class="form-check-input" type="radio" name="participation" id="participation_freelancer" value="freelancer" 
+                           {% if request.GET.participation == 'freelancer' %}checked{% endif %}>
+                    <label class="form-check-label" for="participation_freelancer">
+                        Где я исполнитель
+                    </label>
+                </div>
+                {% endif %}
                 
                 <!-- Фильтр по статусу -->
                 <p class="text-white">Статус:</p>
@@ -139,11 +141,29 @@
     </div>
     
     <!-- Кнопка создания нового заказа -->
+    {% if user.is_authenticated %}
     <div class="mb-4">
         <a href="{% url 'order:create' %}" class="btn btn-primary btn-lg">
             <i class="bi bi-plus-circle"></i> Создать новый заказ
         </a>
+        <a href="{% url 'order:my_orders' %}" class="btn btn-outline-primary btn-lg ms-2">
+            <i class="bi bi-person-circle"></i> Мои заказы
+        </a>
     </div>
+    {% else %}
+    <div class="alert alert-info mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-1">Хотите создать заказ или откликнуться?</h5>
+                <p class="mb-0">Войдите или зарегистрируйтесь, чтобы получить доступ ко всем возможностям биржи</p>
+            </div>
+            <div>
+                <a href="{% url 'user:login' %}" class="btn btn-primary">Войти</a>
+                <a href="{% url 'user:registration' %}" class="btn btn-outline-primary ms-2">Регистрация</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     
     <!-- Статистика -->
     <div class="row mb-4">
@@ -191,14 +211,11 @@
                         <span class="badge bg-{% if order.status == 'open' %}primary{% elif order.status == 'in_progress' %}warning{% elif order.status == 'completed' %}success{% else %}secondary{% endif %}">
                             {{ order.get_status_display }}
                         </span>
-                            <span class="badge bg-info">
-                                Заказчик
+                        {% if order.is_mine %}
+                            <span class="badge bg-{% if order.user_role == 'customer' %}info{% else %}success{% endif %}">
+                                {% if order.user_role == 'customer' %}Мой заказ{% else %}Я исполнитель{% endif %}
                             </span>
-                            {% if order.is_mine %}
-                                <span class="badge bg-{% if order.user_role == 'customer' %}info{% else %}success{% endif %}">
-                                    {% if order.user_role == 'customer' %}Мой заказ{% else %}Я исполнитель{% endif %}
-                                </span>
-                            {% endif %}
+                        {% endif %}
                     </div>
                     
                     <div class="card-body">
@@ -249,56 +266,6 @@
                         
                         <!-- Информация о пользователях -->
                         <div class="border-top pt-3">
-                        <div class="row">
-                            <div class="col-12 mb-2">
-                                <small class="text-muted">Заказчик</small>
-                                <div class="d-flex align-items-center">
-                                    {% if order.customer.image %}
-                                        <img src="{{ order.customer.image.url }}" 
-                                            alt="{{ order.customer.username }}" 
-                                            class="rounded-circle me-2" 
-                                            width="30" 
-                                            height="30">
-                                    {% else %}
-                                        <img src="{% static 'deps/images/baseavatar.jpg' %}" 
-                                            alt="{{ order.customer.username }}" 
-                                            class="rounded-circle me-2" 
-                                            width="30" 
-                                            height="30">
-                                    {% endif %}
-                                    <div>
-                                        <div><strong>{{ order.customer.get_full_name|default:order.customer.username|truncatechars:15 }}</strong></div>
-                                        <small class="text-muted">@{{ order.customer.username }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            {% if order.freelancer %}
-                            <div class="col-12">
-                                <small class="text-muted">Исполнитель</small>
-                                <div class="d-flex align-items-center">
-                                    {% if order.freelancer.image %}
-                                        <img src="{{ order.freelancer.image.url }}" 
-                                            alt="{{ order.freelancer.username }}" 
-                                            class="rounded-circle me-2" 
-                                            width="30" 
-                                            height="30">
-                                    {% else %}
-                                        <img src="{% static 'deps/images/baseavatar.jpg' %}" 
-                                            alt="{{ order.freelancer.username }}" 
-                                            class="rounded-circle me-2" 
-                                            width="30" 
-                                            height="30">
-                                    {% endif %}
-                                    <div>
-                                        <div><strong>{{ order.freelancer.get_full_name|default:order.freelancer.username|truncatechars:15 }}</strong></div>
-                                        <small class="text-muted">@{{ order.freelancer.username }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
                             <div class="row">
                                 <div class="col-12 mb-2">
                                     <small class="text-muted">Заказчик</small>
@@ -318,6 +285,7 @@
                                         {% endif %}
                                         <div>
                                             <div><strong>{{ order.customer.get_full_name|default:order.customer.username|truncatechars:15 }}</strong></div>
+                                            <small class="text-muted">@{{ order.customer.username }}</small>
                                         </div>
                                     </div>
                                 </div>
@@ -341,6 +309,7 @@
                                         {% endif %}
                                         <div>
                                             <div><strong>{{ order.freelancer.get_full_name|default:order.freelancer.username|truncatechars:15 }}</strong></div>
+                                            <small class="text-muted">@{{ order.freelancer.username }}</small>
                                         </div>
                                     </div>
                                 </div>
@@ -348,24 +317,24 @@
                             </div>
                         </div>
                         
-                            <!-- Кнопки действий -->
-                            <div class="d-flex justify-content-between mt-3">
-                                <a href="{% url 'order:detail' order.pk %}" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-eye"></i> Подробнее
-                                </a>
-                                
-                                {% if order.customer == user and order.status == 'open' %}
+                        <!-- Кнопки действий -->
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="{% url 'order:detail' order.pk %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye"></i> Подробнее
+                            </a>
+                            
+                            {% if user.is_authenticated %}
+                                {% if user == order.customer and order.status == 'open' %}
                                     <a href="{% url 'order:edit' order.pk %}" class="btn btn-outline-warning btn-sm">
                                         <i class="bi bi-pencil"></i> Редактировать
                                     </a>
-                                {% endif %}
-                                
-                                {% if user != order.customer and order.status == 'open' and not order.is_mine %}
+                                {% elif user != order.customer and order.status == 'open' and not order.is_mine %}
                                     <a href="{% url 'order:apply' order.pk %}" class="btn btn-success btn-sm">
                                         <i class="bi bi-check-circle"></i> Откликнуться
                                     </a>
                                 {% endif %}
-                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -377,17 +346,19 @@
                 </div>
                 <h3 class="text-muted">Заказов не найдено</h3>
                 <p class="text-muted mb-4">
-                    {% if request.GET.status or request.GET.category or request.GET.role %}
+                    {% if request.GET.status or request.GET.category or request.GET.participation %}
                         Попробуйте изменить параметры фильтрации
                     {% else %}
-                        У вас пока нет заказов. Создайте свой первый заказ!
+                        На бирже пока нет заказов. Будьте первым!
                     {% endif %}
                 </p>
-                <a href="{% url 'order:create' %}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle"></i> Создать заказ
-                </a>
-                {% if request.GET.status or request.GET.category or request.GET.role %}
-                    <a href="{% url 'order:list' %}" class="btn btn-outline-secondary ms-2">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'order:create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Создать заказ
+                    </a>
+                {% endif %}
+                {% if request.GET.status or request.GET.category or request.GET.participation %}
+                    <a href="{% url 'order:all_orders' %}" class="btn btn-outline-secondary ms-2">
                         <i class="bi bi-x-circle"></i> Сбросить фильтры
                     </a>
                 {% endif %}

@@ -1,0 +1,177 @@
+<!-- order/templates/order/apply_form.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-check-circle"></i> Отклик на заказ
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Информация о заказе -->
+                    <div class="mb-4">
+                        <h5 class="text-primary mb-3">Информация о заказе</h5>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ order.title }}</h6>
+                                <p class="card-text text-muted">{{ order.description|truncatechars:200 }}</p>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Категория:</small>
+                                        <div><strong>{{ order.get_category_display }}</strong></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Бюджет:</small>
+                                        <div><strong>{{ order.budget }} {{ order.get_currency_display }}</strong></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Срок выполнения:</small>
+                                        <div><strong>{{ order.deadline|date:"d.m.Y" }}</strong></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Заказчик:</small>
+                                        <div><strong>{{ order.customer.get_full_name|default:order.customer.username }}</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Форма отклика -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if messages %}
+                            {% for message in messages %}
+                                {% if message.tags == 'error' %}
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">Ваш отклик</h5>
+                            
+                            <!-- Сообщение заказчику -->
+                            <div class="mb-3">
+                                <label for="id_message" class="form-label fw-bold">
+                                    Ваше сообщение заказчику *
+                                </label>
+                                <textarea name="message" 
+                                          id="id_message" 
+                                          class="form-control" 
+                                          rows="5" 
+                                          placeholder="Расскажите, почему вы подходите для этого задания, ваш опыт и подход к работе..."
+                                          required></textarea>
+                                <div class="form-text">
+                                    Подробно опишите, как вы планируете выполнить задачу. Чем лучше отклик, тем выше шансы получить заказ.
+                                </div>
+                            </div>
+                            
+                            <!-- Предлагаемая цена -->
+                            <div class="mb-3">
+                                <label for="id_proposed_price" class="form-label fw-bold">
+                                    Предлагаемая цена
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" 
+                                           name="proposed_price" 
+                                           id="id_proposed_price" 
+                                           class="form-control" 
+                                           placeholder="{{ order.budget }}"
+                                           min="0" 
+                                           step="0.01">
+                                    <span class="input-group-text">{{ order.currency }}</span>
+                                </div>
+                                <div class="form-text">
+                                    Текущий бюджет заказчика: <strong>{{ order.budget }} {{ order.get_currency_display }}</strong>. 
+                                    Вы можете предложить свою цену или оставить это поле пустым.
+                                </div>
+                            </div>
+                            
+                            <!-- Срок выполнения -->
+                            <div class="mb-3">
+                                <label for="id_proposed_deadline" class="form-label fw-bold">
+                                    Предлагаемый срок выполнения
+                                </label>
+                                <input type="date" 
+                                       name="proposed_deadline" 
+                                       id="id_proposed_deadline" 
+                                       class="form-control" 
+                                       min="{{ today|date:'Y-m-d' }}">
+                                <div class="form-text">
+                                    Текущий срок заказчика: <strong>{{ order.deadline|date:"d.m.Y" }}</strong>. 
+                                    Вы можете предложить свой срок или оставить это поле пустым.
+                                </div>
+                            </div>
+                            
+                            <!-- Примеры работ (опционально) -->
+                            <div class="mb-3">
+                                <label for="id_portfolio_links" class="form-label fw-bold">
+                                    Ссылки на примеры работ (опционально)
+                                </label>
+                                <textarea name="portfolio_links" 
+                                          id="id_portfolio_links" 
+                                          class="form-control" 
+                                          rows="2"
+                                          placeholder="https://ваш-сайт.com/portfolio&#10;https://github.com/ваш-профиль"></textarea>
+                                <div class="form-text">
+                                    Укажите ссылки на ваше портфолио, GitHub, Behance или другие примеры работ (по одной на строку).
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Предупреждение -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Важно!</h6>
+                            <ul class="mb-0">
+                                <li>Отклик нельзя будет отменить или изменить после отправки</li>
+                                <li>Заказчик увидит ваш профиль и предложение</li>
+                                <li>После принятия отклика заказ перейдет в статус "В работе"</li>
+                                <li>Обсуждение деталей происходит в чате заказа</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Кнопки -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'order:detail' order.pk %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Вернуться к заказу
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-send-check"></i> Отправить отклик
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Устанавливаем минимальную дату для предлагаемого срока
+    const deadlineInput = document.getElementById('id_proposed_deadline');
+    if (deadlineInput && !deadlineInput.value) {
+        const today = new Date();
+        const nextWeek = new Date(today);
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        deadlineInput.value = nextWeek.toISOString().split('T')[0];
+    }
+    
+    // Устанавливаем рекомендуемую цену равной бюджету заказа
+    const priceInput = document.getElementById('id_proposed_price');
+    if (priceInput) {
+        priceInput.placeholder = "{{ order.budget }}";
+    }
+});
+</script>
+{% endblock %}
