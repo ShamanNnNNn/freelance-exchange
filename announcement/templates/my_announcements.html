@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Мои объявления</h1>
+        <a href="{% url 'announcement:create' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-2"></i>Создать новое
+        </a>
+    </div>
+    
+    {% if announcements %}
+    <div class="row">
+        {% for announcement in announcements %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title mb-0">
+                            <a href="{% url 'announcement:detail' announcement.pk %}" 
+                               class="text-decoration-none text-dark">
+                                {{ announcement.title }}
+                            </a>
+                        </h5>
+                        <span class="badge {% if announcement.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                            {% if announcement.is_active %}Активно{% else %}Неактивно{% endif %}
+                        </span>
+                    </div>
+                    
+                    <p class="card-text text-muted small mb-3">
+                        {{ announcement.short_description|truncatechars:100 }}
+                    </p>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted me-3">
+                                <i class="bi bi-eye me-1"></i>{{ announcement.views }}
+                            </small>
+                            <small class="text-muted">
+                                <i class="bi bi-calendar me-1"></i>{{ announcement.created_at|date:"d.m.Y" }}
+                            </small>
+                        </div>
+                        
+                        <!-- Кнопки управления -->
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'announcement:detail' announcement.pk %}" 
+                               class="btn btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'announcement:edit' announcement.pk %}" 
+                               class="btn btn-outline-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post" action="{% url 'announcement:toggle_status' announcement.pk %}" 
+                                  class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-{% if announcement.is_active %}secondary{% else %}success{% endif %}">
+                                    <i class="bi bi-power"></i>
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn-outline-danger"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#deleteModal{{ announcement.id }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Модальное окно удаления -->
+            <div class="modal fade" id="deleteModal{{ announcement.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Удалить объявление?</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Вы уверены, что хотите удалить "{{ announcement.title }}"?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <form method="post" action="{% url 'announcement:delete' announcement.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Удалить</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Пагинация -->
+    {% if announcements.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if announcements.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ announcements.previous_page_number }}">←</a>
+            </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">{{ announcements.number }}</span>
+            </li>
+            
+            {% if announcements.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ announcements.next_page_number }}">→</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-megaphone display-1 text-muted mb-4"></i>
+        <h3 class="text-muted mb-3">У вас пока нет объявлений</h3>
+        <p class="text-muted mb-4">Создайте первое объявление, чтобы предлагать свои услуги</p>
+        <a href="{% url 'announcement:create' %}" class="btn btn-success btn-lg">
+            <i class="bi bi-plus-circle me-2"></i>Создать объявление
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

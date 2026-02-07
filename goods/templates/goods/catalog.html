@@ -11,71 +11,71 @@
             Фильтры
         </button>
     
-        <form action="{% url 'order:all_orders' %}" method="get" class="dropdown-menu bg-dark" data-bs-theme="dark">
+        <form id="filterForm" action="{% url 'order:all_orders' %}" method="get" class="dropdown-menu bg-dark" data-bs-theme="dark">
             <div class="p-3">
                 <!-- Фильтр по участию -->
                 <p class="text-white">Тип заказов:</p>
-<div class="form-check text-white mb-2">
-    <input class="form-check-input" type="radio" name="participation" id="participation_all" value="" 
-           {% if not request.GET.participation %}checked{% endif %}>
-    <label class="form-check-label" for="participation_all">
-        Все заказы на бирже
-    </label>
-        </div>
-        <div class="form-check text-white mb-2">
-            <input class="form-check-input" type="radio" name="participation" id="participation_my_orders" value="my_orders" 
-                {% if request.GET.participation == 'my_orders' %}checked{% endif %}>
-            <label class="form-check-label" for="participation_my_orders">
-                Только мои заказы
-            </label>
-        </div>
-        <div class="form-check text-white mb-2">
-            <input class="form-check-input" type="radio" name="participation" id="participation_customer" value="customer" 
-                {% if request.GET.participation == 'customer' %}checked{% endif %}>
-            <label class="form-check-label" for="participation_customer">
-                Где я заказчик
-            </label>
-        </div>
-        <div class="form-check text-white mb-3">
-            <input class="form-check-input" type="radio" name="participation" id="participation_freelancer" value="freelancer" 
-                {% if request.GET.participation == 'freelancer' %}checked{% endif %}>
-            <label class="form-check-label" for="participation_freelancer">
-                Где я исполнитель
-            </label>
-        </div>
+                <div class="form-check text-white mb-2">
+                    <input class="form-check-input filter-radio" type="radio" name="participation" id="participation_all" value="" 
+                           {% if not request.GET.participation %}checked{% endif %}>
+                    <label class="form-check-label" for="participation_all">
+                        Все заказы на бирже
+                    </label>
+                </div>
+                <div class="form-check text-white mb-2">
+                    <input class="form-check-input filter-radio" type="radio" name="participation" id="participation_my_orders" value="my_orders" 
+                           {% if request.GET.participation == 'my_orders' %}checked{% endif %}>
+                    <label class="form-check-label" for="participation_my_orders">
+                        Только мои заказы
+                    </label>
+                </div>
+                <div class="form-check text-white mb-2">
+                    <input class="form-check-input filter-radio" type="radio" name="participation" id="participation_customer" value="customer" 
+                           {% if request.GET.participation == 'customer' %}checked{% endif %}>
+                    <label class="form-check-label" for="participation_customer">
+                        Где я заказчик
+                    </label>
+                </div>
+                <div class="form-check text-white mb-3">
+                    <input class="form-check-input filter-radio" type="radio" name="participation" id="participation_freelancer" value="freelancer" 
+                           {% if request.GET.participation == 'freelancer' %}checked{% endif %}>
+                    <label class="form-check-label" for="participation_freelancer">
+                        Где я исполнитель
+                    </label>
+                </div>
                 
                 <!-- Фильтр по статусу -->
                 <p class="text-white">Статус:</p>
                 <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="status" id="status_all" value="" 
+                    <input class="form-check-input filter-radio" type="radio" name="status" id="status_all" value="" 
                            {% if not request.GET.status %}checked{% endif %}>
                     <label class="form-check-label" for="status_all">
                         Все статусы
                     </label>
                 </div>
                 <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="status" id="status_open" value="open" 
+                    <input class="form-check-input filter-radio" type="radio" name="status" id="status_open" value="open" 
                            {% if request.GET.status == 'open' %}checked{% endif %}>
                     <label class="form-check-label" for="status_open">
                         Открытые
                     </label>
                 </div>
                 <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="status" id="status_in_progress" value="in_progress" 
+                    <input class="form-check-input filter-radio" type="radio" name="status" id="status_in_progress" value="in_progress" 
                            {% if request.GET.status == 'in_progress' %}checked{% endif %}>
                     <label class="form-check-label" for="status_in_progress">
                         В работе
                     </label>
                 </div>
                 <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="status" id="status_completed" value="completed" 
+                    <input class="form-check-input filter-radio" type="radio" name="status" id="status_completed" value="completed" 
                            {% if request.GET.status == 'completed' %}checked{% endif %}>
                     <label class="form-check-label" for="status_completed">
                         Завершенные
                     </label>
                 </div>
                 <div class="form-check text-white mb-3">
-                    <input class="form-check-input" type="radio" name="status" id="status_canceled" value="canceled" 
+                    <input class="form-check-input filter-radio" type="radio" name="status" id="status_canceled" value="canceled" 
                            {% if request.GET.status == 'canceled' %}checked{% endif %}>
                     <label class="form-check-label" for="status_canceled">
                         Отмененные
@@ -84,7 +84,7 @@
                 
                 <!-- Фильтр по категории -->
                 <p class="text-white">Категория:</p>
-                <select name="category" class="form-select mb-3">
+                <select name="category" class="form-select mb-3 filter-select">
                     <option value="">Все категории</option>
                     <option value="web" {% if request.GET.category == 'web' %}selected{% endif %}>Веб-разработка</option>
                     <option value="mobile" {% if request.GET.category == 'mobile' %}selected{% endif %}>Мобильная разработка</option>
@@ -98,42 +98,48 @@
                 <!-- Сортировка -->
                 <p class="text-white">Сортировать:</p>
                 <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="order_by" id="order_default" value="default" 
+                    <input class="form-check-input filter-radio" type="radio" name="order_by" id="order_default" value="default" 
                            {% if not request.GET.order_by or request.GET.order_by == 'default' %}checked{% endif %}>
                     <label class="form-check-label" for="order_default">
                         По умолчанию
                     </label>
                 </div>
                 <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="order_by" id="order_price_asc" value="budget" 
+                    <input class="form-check-input filter-radio" type="radio" name="order_by" id="order_price_asc" value="budget" 
                            {% if request.GET.order_by == 'budget' %}checked{% endif %}>
                     <label class="form-check-label" for="order_price_asc">
                         По бюджету (возрастание)
                     </label>
                 </div>
                 <div class="form-check text-white mb-3">
-                    <input class="form-check-input" type="radio" name="order_by" id="order_price_desc" value="-budget" 
+                    <input class="form-check-input filter-radio" type="radio" name="order_by" id="order_price_desc" value="-budget" 
                            {% if request.GET.order_by == '-budget' %}checked{% endif %}>
                     <label class="form-check-label" for="order_price_desc">
                         По бюджету (убывание)
                     </label>
                 </div>
                 <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="order_by" id="order_date_asc" value="deadline" 
+                    <input class="form-check-input filter-radio" type="radio" name="order_by" id="order_date_asc" value="deadline" 
                            {% if request.GET.order_by == 'deadline' %}checked{% endif %}>
                     <label class="form-check-label" for="order_date_asc">
                         По сроку (ближайшие)
                     </label>
                 </div>
                 <div class="form-check text-white mb-3">
-                    <input class="form-check-input" type="radio" name="order_by" id="order_date_desc" value="-deadline" 
+                    <input class="form-check-input filter-radio" type="radio" name="order_by" id="order_date_desc" value="-deadline" 
                            {% if request.GET.order_by == '-deadline' %}checked{% endif %}>
                     <label class="form-check-label" for="order_date_desc">
                         По сроку (поздние)
                     </label>
                 </div>
                 
-                <button type="submit" class="btn btn-primary w-100">Применить фильтры</button>
+                <!-- Кнопка сброса фильтров -->
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary w-100 mb-2">Применить фильтры</button>
+                    <a href="{% url 'order:all_orders' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-circle"></i> Сбросить все фильтры
+                    </a>
+                </div>
             </div>
         </form>
     </div>
@@ -145,211 +151,272 @@
         </a>
     </div>
     
-    <!-- Статистика -->
+    <!-- Статистика по текущим фильтрам -->
     <div class="row mb-4">
         <div class="col-md-3 col-6 mb-3">
             <div class="card text-center border-primary">
                 <div class="card-body">
-                    <div class="display-6 text-primary">{{ all_count|default:0 }}</div>
-                    <div class="text-muted">Всего заказов</div>
+                    <div class="display-6 text-primary">
+                        {% if filtered_count is not None %}
+                            {{ filtered_count }}
+                        {% else %}
+                            {{ all_count|default:0 }}
+                        {% endif %}
+                    </div>
+                    <div class="text-muted">Найдено заказов</div>
+                    <small class="text-muted">
+                        {% if request.GET.status or request.GET.category or request.GET.participation %}
+                            по текущим фильтрам
+                        {% else %}
+                            всего на бирже
+                        {% endif %}
+                    </small>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6 mb-3">
             <div class="card text-center border-primary">
                 <div class="card-body">
-                    <div class="display-6 text-primary">{{ open_count|default:0 }}</div>
+                    <div class="display-6 text-primary">
+                        {% if open_count_filtered is not None %}
+                            {{ open_count_filtered }}
+                        {% else %}
+                            {{ open_count|default:0 }}
+                        {% endif %}
+                    </div>
                     <div class="text-muted">Открытые</div>
+                    <small class="text-muted">
+                        {% if request.GET.status != 'open' and not request.GET.status %}
+                            в текущей выборке
+                        {% else %}
+                            отфильтровано
+                        {% endif %}
+                    </small>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6 mb-3">
             <div class="card text-center border-warning">
                 <div class="card-body">
-                    <div class="display-6 text-warning">{{ in_progress_count|default:0 }}</div>
+                    <div class="display-6 text-warning">
+                        {% if in_progress_count_filtered is not None %}
+                            {{ in_progress_count_filtered }}
+                        {% else %}
+                            {{ in_progress_count|default:0 }}
+                        {% endif %}
+                    </div>
                     <div class="text-muted">В работе</div>
+                    <small class="text-muted">
+                        {% if request.GET.status != 'in_progress' and not request.GET.status %}
+                            в текущей выборке
+                        {% else %}
+                            отфильтровано
+                        {% endif %}
+                    </small>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6 mb-3">
             <div class="card text-center border-success">
                 <div class="card-body">
-                    <div class="display-6 text-success">{{ completed_count|default:0 }}</div>
+                    <div class="display-6 text-success">
+                        {% if completed_count_filtered is not None %}
+                            {{ completed_count_filtered }}
+                        {% else %}
+                            {{ completed_count|default:0 }}
+                        {% endif %}
+                    </div>
                     <div class="text-muted">Завершенные</div>
+                    <small class="text-muted">
+                        {% if request.GET.status != 'completed' and not request.GET.status %}
+                            в текущей выборке
+                        {% else %}
+                            отфильтровано
+                        {% endif %}
+                    </small>
                 </div>
             </div>
         </div>
     </div>
     
+    <!-- Информация о текущих фильтрах -->
+    {% if request.GET.status or request.GET.category or request.GET.participation or request.GET.order_by %}
+    <div class="alert alert-info mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <i class="bi bi-funnel"></i>
+                <strong>Применены фильтры:</strong>
+                {% if request.GET.status %}
+                    <span class="badge bg-primary ms-2">Статус: 
+                        {% if request.GET.status == 'open' %}Открытые
+                        {% elif request.GET.status == 'in_progress' %}В работе
+                        {% elif request.GET.status == 'completed' %}Завершенные
+                        {% elif request.GET.status == 'canceled' %}Отмененные
+                        {% else %}{{ request.GET.status }}
+                        {% endif %}
+                    </span>
+                {% endif %}
+                {% if request.GET.category %}
+                    <span class="badge bg-info ms-2">Категория: 
+                        {% if request.GET.category == 'web' %}Веб-разработка
+                        {% elif request.GET.category == 'mobile' %}Мобильная разработка
+                        {% elif request.GET.category == 'design' %}Дизайн
+                        {% elif request.GET.category == 'marketing' %}Маркетинг
+                        {% elif request.GET.category == 'writing' %}Копирайтинг
+                        {% elif request.GET.category == 'translation' %}Переводы
+                        {% elif request.GET.category == 'other' %}Другое
+                        {% else %}{{ request.GET.category }}
+                        {% endif %}
+                    </span>
+                {% endif %}
+                {% if request.GET.participation %}
+                    <span class="badge bg-warning ms-2">Участие: 
+                        {% if request.GET.participation == 'my_orders' %}Мои заказы
+                        {% elif request.GET.participation == 'customer' %}Я заказчик
+                        {% elif request.GET.participation == 'freelancer' %}Я исполнитель
+                        {% endif %}
+                    </span>
+                {% endif %}
+                {% if request.GET.order_by and request.GET.order_by != 'default' %}
+                    <span class="badge bg-secondary ms-2">
+                        Сортировка: 
+                        {% if request.GET.order_by == 'budget' %}По бюджету ↑
+                        {% elif request.GET.order_by == '-budget' %}По бюджету ↓
+                        {% elif request.GET.order_by == 'deadline' %}По сроку ↑
+                        {% elif request.GET.order_by == '-deadline' %}По сроку ↓
+                        {% endif %}
+                    </span>
+                {% endif %}
+            </div>
+            <a href="{% url 'order:all_orders' %}" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-x-circle"></i> Очистить все
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
     <!-- Вывод заказов -->
     <div class="row">
-        {% for order in orders %}
-            <!-- Карточка заказа -->
-            <div class="col-lg-4 col-md-6 p-4">
-                <div class="card border-primary rounded custom-shadow">
-                    <div class="card-header bg-transparent border-primary d-flex justify-content-between align-items-center">
-                        <span class="badge bg-{% if order.status == 'open' %}primary{% elif order.status == 'in_progress' %}warning{% elif order.status == 'completed' %}success{% else %}secondary{% endif %}">
-                            {{ order.get_status_display }}
-                        </span>
-                            <span class="badge bg-info">
-                                Заказчик
+        {% if orders %}
+            {% for order in orders %}
+                <!-- Карточка заказа -->
+                <div class="col-lg-4 col-md-6 p-4">
+                    <div class="card border-primary rounded custom-shadow h-100 d-flex flex-column">
+                        <div class="card-header bg-transparent border-primary d-flex justify-content-between align-items-center">
+                            <span class="badge bg-{% if order.status == 'open' %}primary{% elif order.status == 'in_progress' %}warning{% elif order.status == 'completed' %}success{% else %}secondary{% endif %}">
+                                {{ order.get_status_display }}
                             </span>
-                            {% if order.is_mine %}
-                                <span class="badge bg-{% if order.user_role == 'customer' %}info{% else %}success{% endif %}">
-                                    {% if order.user_role == 'customer' %}Мой заказ{% else %}Я исполнитель{% endif %}
-                                </span>
+                            
+                            {% if order.customer == user %}
+                                <span class="badge bg-info">Мой заказ</span>
+                            {% elif order.freelancer == user %}
+                                <span class="badge bg-success">Я исполнитель</span>
                             {% endif %}
-                    </div>
-                    
-                    <div class="card-body">
-                        <a href="{% url 'order:detail' order.pk %}">
-                            <h5 class="card-title">
-                                {{ order.title|truncatechars:40 }}
-                            </h5>
-                        </a>
-                        
-                        <p class="card-text text-muted">
-                            {{ order.description|truncatechars:100 }}
-                        </p>
-                        
-                        <!-- Теги -->
-                        {% if order.tags %}
-                            <div class="mb-3">
-                                {% for tag in order.tags|slice:":3" %}
-                                    <span class="badge bg-light text-dark border">{{ tag|cut:"," }}</span>
-                                {% endfor %}
-                                {% if order.tags|length > 3 %}
-                                    <span class="badge bg-light text-dark border">+{{ order.tags|length|add:"-3" }}</span>
-                                {% endif %}
-                            </div>
-                        {% endif %}
-                        
-                        <!-- Информация о заказе -->
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <small class="text-muted">Категория</small>
-                                <div><strong>{{ order.get_category_display }}</strong></div>
-                            </div>
-                            <div class="col-6">
-                                <small class="text-muted">Бюджет</small>
-                                <div><strong>{{ order.budget }} {{ order.get_currency_display }}</strong></div>
-                            </div>
                         </div>
                         
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <small class="text-muted">Срок до</small>
-                                <div><strong>{{ order.deadline|date:"d.m.Y" }}</strong></div>
-                            </div>
-                            <div class="col-6">
-                                <small class="text-muted">Создан</small>
-                                <div><strong>{{ order.created_at|date:"d.m.Y" }}</strong></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Информация о пользователях -->
-                        <div class="border-top pt-3">
-                        <div class="row">
-                            <div class="col-12 mb-2">
-                                <small class="text-muted">Заказчик</small>
-                                <div class="d-flex align-items-center">
-                                    {% if order.customer.image %}
-                                        <img src="{{ order.customer.image.url }}" 
-                                            alt="{{ order.customer.username }}" 
-                                            class="rounded-circle me-2" 
-                                            width="30" 
-                                            height="30">
-                                    {% else %}
-                                        <img src="{% static 'deps/images/baseavatar.jpg' %}" 
-                                            alt="{{ order.customer.username }}" 
-                                            class="rounded-circle me-2" 
-                                            width="30" 
-                                            height="30">
-                                    {% endif %}
-                                    <div>
-                                        <div><strong>{{ order.customer.get_full_name|default:order.customer.username|truncatechars:15 }}</strong></div>
-                                        <small class="text-muted">@{{ order.customer.username }}</small>
-                                    </div>
+                        <div class="card-body d-flex flex-column">
+                            <a href="{% url 'order:detail' order.pk %}" class="text-decoration-none">
+                                <h5 class="card-title text-dark">
+                                    {{ order.title|truncatechars:40 }}
+                                </h5>
+                            </a>
+                            
+                            <p class="card-text text-muted flex-grow-1">
+                                {{ order.description|truncatechars:100 }}
+                            </p>
+                            
+                            <!-- Теги -->
+                            {% if order.tags %}
+                                <div class="mb-3">
+                                    {% with tags=order.tags|split:"," %}
+                                        {% for tag in tags|slice:":3" %}
+                                            <span class="badge bg-light text-dark border">{{ tag|trim }}</span>
+                                        {% endfor %}
+                                        {% if tags|length > 3 %}
+                                            <span class="badge bg-light text-dark border">+{{ tags|length|add:"-3" }}</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Информация о заказе -->
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Категория</small>
+                                    <div><strong>{{ order.get_category_display }}</strong></div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Бюджет</small>
+                                    <div><strong>{{ order.budget }} {{ order.get_currency_display }}</strong></div>
                                 </div>
                             </div>
                             
-                            {% if order.freelancer %}
-                            <div class="col-12">
-                                <small class="text-muted">Исполнитель</small>
-                                <div class="d-flex align-items-center">
-                                    {% if order.freelancer.image %}
-                                        <img src="{{ order.freelancer.image.url }}" 
-                                            alt="{{ order.freelancer.username }}" 
-                                            class="rounded-circle me-2" 
-                                            width="30" 
-                                            height="30">
-                                    {% else %}
-                                        <img src="{% static 'deps/images/baseavatar.jpg' %}" 
-                                            alt="{{ order.freelancer.username }}" 
-                                            class="rounded-circle me-2" 
-                                            width="30" 
-                                            height="30">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Срок до</small>
+                                    <div><strong>{{ order.deadline|date:"d.m.Y" }}</strong></div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Создан</small>
+                                    <div><strong>{{ order.created_at|date:"d.m.Y" }}</strong></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Информация о пользователях -->
+                            <div class="border-top pt-3 mt-auto">
+                                <div class="row">
+                                    <div class="col-12 mb-2">
+                                        <small class="text-muted">Заказчик</small>
+                                        <div class="d-flex align-items-center">
+                                            {% if order.customer.image %}
+                                                <img src="{{ order.customer.image.url }}" 
+                                                     alt="{{ order.customer.username }}" 
+                                                     class="rounded-circle me-2" 
+                                                     width="30" 
+                                                     height="30">
+                                            {% else %}
+                                                <img src="{% static 'deps/images/baseavatar.jpg' %}" 
+                                                     alt="{{ order.customer.username }}" 
+                                                     class="rounded-circle me-2" 
+                                                     width="30" 
+                                                     height="30">
+                                            {% endif %}
+                                            <div>
+                                                <div><strong>{{ order.customer.get_full_name|default:order.customer.username|truncatechars:15 }}</strong></div>
+                                                <small class="text-muted">@{{ order.customer.username }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if order.freelancer %}
+                                    <div class="col-12">
+                                        <small class="text-muted">Исполнитель</small>
+                                        <div class="d-flex align-items-center">
+                                            {% if order.freelancer.image %}
+                                                <img src="{{ order.freelancer.image.url }}" 
+                                                     alt="{{ order.freelancer.username }}" 
+                                                     class="rounded-circle me-2" 
+                                                     width="30" 
+                                                     height="30">
+                                            {% else %}
+                                                <img src="{% static 'deps/images/baseavatar.jpg' %}" 
+                                                     alt="{{ order.freelancer.username }}" 
+                                                     class="rounded-circle me-2" 
+                                                     width="30" 
+                                                     height="30">
+                                            {% endif %}
+                                            <div>
+                                                <div><strong>{{ order.freelancer.get_full_name|default:order.freelancer.username|truncatechars:15 }}</strong></div>
+                                                <small class="text-muted">@{{ order.freelancer.username }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
                                     {% endif %}
-                                    <div>
-                                        <div><strong>{{ order.freelancer.get_full_name|default:order.freelancer.username|truncatechars:15 }}</strong></div>
-                                        <small class="text-muted">@{{ order.freelancer.username }}</small>
-                                    </div>
                                 </div>
                             </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                            <div class="row">
-                                <div class="col-12 mb-2">
-                                    <small class="text-muted">Заказчик</small>
-                                    <div class="d-flex align-items-center">
-                                        {% if order.customer.image %}
-                                            <img src="{{ order.customer.image.url }}" 
-                                                 alt="{{ order.customer.username }}" 
-                                                 class="rounded-circle me-2" 
-                                                 width="30" 
-                                                 height="30">
-                                        {% else %}
-                                            <img src="{% static 'deps/images/baseavatar.jpg' %}" 
-                                                 alt="{{ order.customer.username }}" 
-                                                 class="rounded-circle me-2" 
-                                                 width="30" 
-                                                 height="30">
-                                        {% endif %}
-                                        <div>
-                                            <div><strong>{{ order.customer.get_full_name|default:order.customer.username|truncatechars:15 }}</strong></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                {% if order.freelancer %}
-                                <div class="col-12">
-                                    <small class="text-muted">Исполнитель</small>
-                                    <div class="d-flex align-items-center">
-                                        {% if order.freelancer.image %}
-                                            <img src="{{ order.freelancer.image.url }}" 
-                                                 alt="{{ order.freelancer.username }}" 
-                                                 class="rounded-circle me-2" 
-                                                 width="30" 
-                                                 height="30">
-                                        {% else %}
-                                            <img src="{% static 'deps/images/baseavatar.jpg' %}" 
-                                                 alt="{{ order.freelancer.username }}" 
-                                                 class="rounded-circle me-2" 
-                                                 width="30" 
-                                                 height="30">
-                                        {% endif %}
-                                        <div>
-                                            <div><strong>{{ order.freelancer.get_full_name|default:order.freelancer.username|truncatechars:15 }}</strong></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
+                            
                             <!-- Кнопки действий -->
-                            <div class="d-flex justify-content-between mt-3">
+                            <div class="d-flex justify-content-between mt-3 pt-3 border-top">
                                 <a href="{% url 'order:detail' order.pk %}" class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-eye"></i> Подробнее
                                 </a>
@@ -360,16 +427,17 @@
                                     </a>
                                 {% endif %}
                                 
-                                {% if user != order.customer and order.status == 'open' and not order.is_mine %}
+                                {% if user != order.customer and order.status == 'open' and order.freelancer != user %}
                                     <a href="{% url 'order:apply' order.pk %}" class="btn btn-success btn-sm">
                                         <i class="bi bi-check-circle"></i> Откликнуться
                                     </a>
                                 {% endif %}
                             </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% empty %}
+            {% endfor %}
+        {% else %}
             <!-- Если нет заказов -->
             <div class="col-12 text-center py-5">
                 <div class="mb-4">
@@ -377,22 +445,22 @@
                 </div>
                 <h3 class="text-muted">Заказов не найдено</h3>
                 <p class="text-muted mb-4">
-                    {% if request.GET.status or request.GET.category or request.GET.role %}
+                    {% if request.GET.status or request.GET.category or request.GET.participation %}
                         Попробуйте изменить параметры фильтрации
                     {% else %}
-                        У вас пока нет заказов. Создайте свой первый заказ!
+                        Заказов на бирже пока нет. Создайте первый заказ!
                     {% endif %}
                 </p>
                 <a href="{% url 'order:create' %}" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Создать заказ
                 </a>
-                {% if request.GET.status or request.GET.category or request.GET.role %}
-                    <a href="{% url 'order:list' %}" class="btn btn-outline-secondary ms-2">
+                {% if request.GET.status or request.GET.category or request.GET.participation %}
+                    <a href="{% url 'order:all_orders' %}" class="btn btn-outline-secondary ms-2">
                         <i class="bi bi-x-circle"></i> Сбросить фильтры
                     </a>
                 {% endif %}
             </div>
-        {% endfor %}
+        {% endif %}
     </div>
     
     <!-- Пагинация -->
@@ -402,7 +470,7 @@
                 <div class="custom-shadow d-flex">
                     <li class="page-item {% if not orders.has_previous %}disabled{% endif %}">
                         <a class="page-link" href="{% if orders.has_previous %}?{% change_params page=orders.previous_page_number %}{% else %}#{% endif %}">
-                            Назад
+                            <i class="bi bi-chevron-left"></i> Назад
                         </a>
                     </li>
                     
@@ -416,7 +484,7 @@
                     
                     <li class="page-item {% if not orders.has_next %}disabled{% endif %}">
                         <a class="page-link" href="{% if orders.has_next %}?{% change_params page=orders.next_page_number %}{% else %}#{% endif %}">
-                            Далее
+                            Далее <i class="bi bi-chevron-right"></i>
                         </a>
                     </li>
                 </div>
@@ -428,7 +496,6 @@
 <style>
 .card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    height: 100%;
 }
 
 .card:hover {
@@ -462,24 +529,71 @@
     background-color: #0d6efd;
     border-color: #0d6efd;
 }
+
+.alert .badge {
+    font-size: 0.8em;
+    padding: 0.3em 0.6em;
+}
+
+.dropdown-menu {
+    width: 300px;
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Автоматическая отправка формы при изменении радио-кнопок
-    const radioButtons = document.querySelectorAll('input[type="radio"]');
-    radioButtons.forEach(radio => {
+    const filterForm = document.getElementById('filterForm');
+    const dropdown = document.querySelector('.dropdown');
+    
+    // Закрываем dropdown при клике вне его
+    document.addEventListener('click', function(event) {
+        if (!dropdown.contains(event.target)) {
+            const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+            dropdownMenu.classList.remove('show');
+        }
+    });
+    
+    // Автоматическая отправка формы при изменении фильтров
+    const filterRadios = document.querySelectorAll('.filter-radio');
+    const filterSelect = document.querySelector('.filter-select');
+    
+    filterRadios.forEach(radio => {
         radio.addEventListener('change', function() {
-            this.form.submit();
+            // Сохраняем текущие значения
+            const currentPage = new URLSearchParams(window.location.search).get('page');
+            if (currentPage) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'page';
+                hiddenInput.value = currentPage;
+                filterForm.appendChild(hiddenInput);
+            }
+            
+            // Отправляем форму
+            filterForm.submit();
         });
     });
     
-    // Автоматическая отправка формы при изменении select
-    const selectElements = document.querySelectorAll('select');
-    selectElements.forEach(select => {
-        select.addEventListener('change', function() {
-            this.form.submit();
+    if (filterSelect) {
+        filterSelect.addEventListener('change', function() {
+            // Сохраняем текущие значения
+            const currentPage = new URLSearchParams(window.location.search).get('page');
+            if (currentPage) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'page';
+                hiddenInput.value = currentPage;
+                filterForm.appendChild(hiddenInput);
+            }
+            
+            // Отправляем форму
+            filterForm.submit();
         });
+    }
+    
+    // Предотвращаем закрытие dropdown при клике внутри формы
+    filterForm.addEventListener('click', function(event) {
+        event.stopPropagation();
     });
 });
 </script>

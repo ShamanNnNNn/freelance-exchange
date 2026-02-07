@@ -1,0 +1,53 @@
+<!-- order/templates/order/modals/apply_modal.html -->
+{% if user.is_authenticated and user != order.customer and not user_application and order.status == 'open' %}
+<div class="modal fade" id="applyModal" tabindex="-1" aria-labelledby="applyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="applyModalLabel">Отклик на заказ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'order:apply' order.pk %}">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Ваш отклик будет отправлен заказчику. 
+                        Вы сможете отозвать его, пока заказчик не принял решение.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Ваше сообщение заказчику *</label>
+                        <textarea class="form-control" id="message" name="message" rows="4" 
+                                  placeholder="Расскажите, почему вы подходите для этого задания, ваш опыт и подход..."
+                                  required></textarea>
+                        <div class="form-text">Чем подробнее вы опишете ваш подход, тем выше шансы быть выбранным</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="proposed_price" class="form-label">Предлагаемая цена</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="proposed_price" 
+                                   name="proposed_price" min="0" step="0.01"
+                                   placeholder="{{ order.budget }}">
+                            <span class="input-group-text">{{ order.get_currency_display }}</span>
+                        </div>
+                        <div class="form-text">Оставьте пустым, если согласны с бюджетом заказчика</div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        После отправки отклика вы не сможете редактировать его, только отозвать.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-send"></i> Отправить отклик
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}

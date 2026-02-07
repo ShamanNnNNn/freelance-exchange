@@ -75,12 +75,17 @@
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <!-- Поиск заказов -->
                         <li class="nav-item me-3">
-                            <form class="d-flex" role="search" method="get" action="{% url "order:all_orders" %}">
-                                <input class="form-control me-2" type="search" name="search" placeholder="Поиск заказов..." aria-label="Search">
-                                <button class="btn btn-outline-success" type="submit">
-                                    <i class="bi bi-search"></i>
-                                </button>
-                            </form>
+                        <form class="d-flex" role="search" method="get" action="{% url 'order:all_orders' %}">
+                            <input class="form-control me-2" 
+                                type="search" 
+                                name="search" 
+                                placeholder="Поиск заказов..." 
+                                aria-label="Search"
+                                value="{{ request.GET.search|default:'' }}">
+                            <button class="btn btn-outline-success" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </form>
                         </li>
                         
                         <!-- Авторизация/Профиль -->
@@ -181,7 +186,7 @@
                 <div class="col-md-4 text-end">
                     <small>
                         <i class="bi bi-people"></i> Исполнителей: 1,234 | 
-                        <i class="bi bi-briefcase"></i> Заказов: 567 |
+                        <i class="bi bi-briefcase"></i> Заказов: {{ all_count|default:0 }} |
                         <i class="bi bi-check-circle"></i> Выполнено: 4,321
                     </small>
                 </div>

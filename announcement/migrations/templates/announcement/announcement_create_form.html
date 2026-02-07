@@ -1,0 +1,541 @@
+<!-- announcement/templates/announcement/announcement_create_form.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-megaphone"></i> 
+                        {% if form.instance.pk %}
+                            Редактирование объявления
+                        {% else %}
+                            Создание объявления о своих услугах
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    <p class="mb-0">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Шаг 1: Основная информация -->
+                        <div class="mb-5">
+                            <h4 class="text-primary border-bottom pb-2 mb-4">
+                                <span class="badge bg-primary me-2">1</span> Основная информация
+                            </h4>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">
+                                    Название услуги *
+                                </label>
+                                <input type="text" 
+                                       name="{{ form.title.name }}"
+                                       id="{{ form.title.id_for_label }}"
+                                       class="form-control {% if form.title.errors %}is-invalid{% endif %}"
+                                       placeholder="Например: Django разработчик, Веб-дизайнер, SEO специалист"
+                                       value="{{ form.title.value|default:'' }}"
+                                       required>
+                                {% if form.title.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.title.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+                                    Подробное описание *
+                                </label>
+                                <textarea name="{{ form.description.name }}"
+                                          id="{{ form.description.id_for_label }}"
+                                          class="form-control {% if form.description.errors %}is-invalid{% endif %}"
+                                          rows="8"
+                                          placeholder="Подробно опишите ваши услуги, опыт работы, подход к работе, успешные кейсы..."
+                                          required>{{ form.description.value|default:'' }}</textarea>
+                                {% if form.description.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.description.errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Расскажите о своем опыте, подходах к работе, успешных проектах.
+                                    Чем подробнее описание, тем больше доверия у клиентов.
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.category.id_for_label }}" class="form-label fw-bold">
+                                        Категория *
+                                    </label>
+                                    <select name="{{ form.category.name }}"
+                                            id="{{ form.category.id_for_label }}"
+                                            class="form-select {% if form.category.errors %}is-invalid{% endif %}"
+                                            required>
+                                        <option value="">Выберите категорию</option>
+                                        {% for value, label in form.fields.category.choices %}
+                                            <option value="{{ value }}" 
+                                                    {% if form.category.value == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if form.category.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ form.category.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.experience.id_for_label }}" class="form-label fw-bold">
+                                        Опыт работы *
+                                    </label>
+                                    <select name="{{ form.experience.name }}"
+                                            id="{{ form.experience.id_for_label }}"
+                                            class="form-select {% if form.experience.errors %}is-invalid{% endif %}"
+                                            required>
+                                        <option value="">Выберите опыт</option>
+                                        {% for value, label in form.fields.experience.choices %}
+                                            <option value="{{ value }}" 
+                                                    {% if form.experience.value == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if form.experience.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ form.experience.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Шаг 2: Условия работы -->
+                        <div class="mb-5">
+                            <h4 class="text-primary border-bottom pb-2 mb-4">
+                                <span class="badge bg-primary me-2">2</span> Условия работы
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.employment.id_for_label }}" class="form-label fw-bold">
+                                        Тип занятости *
+                                    </label>
+                                    <select name="{{ form.employment.name }}"
+                                            id="{{ form.employment.id_for_label }}"
+                                            class="form-select {% if form.employment.errors %}is-invalid{% endif %}"
+                                            required>
+                                        <option value="">Выберите тип</option>
+                                        {% for value, label in form.fields.employment.choices %}
+                                            <option value="{{ value }}" 
+                                                    {% if form.employment.value == value or not form.employment.value and value == 'freelance' %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if form.employment.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ form.employment.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Цены</label>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <input type="number" 
+                                                   name="{{ form.price_per_hour.name }}"
+                                                   id="{{ form.price_per_hour.id_for_label }}"
+                                                   class="form-control {% if form.price_per_hour.errors %}is-invalid{% endif %}"
+                                                   placeholder="Почасовая"
+                                                   min="0"
+                                                   step="0.01"
+                                                   value="{{ form.price_per_hour.value|default:'' }}">
+                                            {% if form.price_per_hour.errors %}
+                                                <div class="invalid-feedback">
+                                                    {{ form.price_per_hour.errors }}
+                                                </div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">Цена в час</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="number" 
+                                                   name="{{ form.price_per_project.name }}"
+                                                   id="{{ form.price_per_project.id_for_label }}"
+                                                   class="form-control {% if form.price_per_project.errors %}is-invalid{% endif %}"
+                                                   placeholder="За проект"
+                                                   min="0"
+                                                   step="0.01"
+                                                   value="{{ form.price_per_project.value|default:'' }}">
+                                            {% if form.price_per_project.errors %}
+                                                <div class="invalid-feedback">
+                                                    {{ form.price_per_project.errors }}
+                                                </div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">Цена за проект</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-text">
+                                        Укажите хотя бы одну цену. Клиенты будут видеть обе, если укажете.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.currency.id_for_label }}" class="form-label fw-bold">
+                                        Валюта
+                                    </label>
+                                    <select name="{{ form.currency.name }}"
+                                            id="{{ form.currency.id_for_label }}"
+                                            class="form-select">
+                                        {% for value, label in form.fields.currency.choices %}
+                                            <option value="{{ value }}" 
+                                                    {% if form.currency.value == value or not form.currency.value and value == 'RUB' %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Шаг 3: Навыки и технологии -->
+                        <div class="mb-5">
+                            <h4 class="text-primary border-bottom pb-2 mb-4">
+                                <span class="badge bg-primary me-2">3</span> Навыки и технологии
+                            </h4>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.skills.id_for_label }}" class="form-label fw-bold">
+                                    Ключевые навыки *
+                                </label>
+                                <input type="text" 
+                                       name="{{ form.skills.name }}"
+                                       id="{{ form.skills.id_for_label }}"
+                                       class="form-control {% if form.skills.errors %}is-invalid{% endif %}"
+                                       placeholder="Python, Django, JavaScript, React, UI/UX дизайн, SEO оптимизация..."
+                                       value="{{ form.skills.value|default:'' }}"
+                                       required>
+                                {% if form.skills.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.skills.errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Перечислите основные навыки через запятую. Это поможет клиентам найти вас.
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.technologies.id_for_label }}" class="form-label fw-bold">
+                                    Технологии и инструменты
+                                </label>
+                                <textarea name="{{ form.technologies.name }}"
+                                          id="{{ form.technologies.id_for_label }}"
+                                          class="form-control {% if form.technologies.errors %}is-invalid{% endif %}"
+                                          rows="3"
+                                          placeholder="Django, PostgreSQL, Docker, AWS, Figma, Adobe Photoshop, Google Analytics...">{{ form.technologies.value|default:'' }}</textarea>
+                                {% if form.technologies.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.technologies.errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Какими технологиями и инструментами владеете.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Шаг 4: Контактная информация и ссылки -->
+                        <div class="mb-5">
+                            <h4 class="text-primary border-bottom pb-2 mb-4">
+                                <span class="badge bg-primary me-2">4</span> Контактная информация и ссылки
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.contact_email.id_for_label }}" class="form-label fw-bold">
+                                        Контактный email *
+                                    </label>
+                                    <input type="email" 
+                                           name="{{ form.contact_email.name }}"
+                                           id="{{ form.contact_email.id_for_label }}"
+                                           class="form-control {% if form.contact_email.errors %}is-invalid{% endif %}"
+                                           placeholder="email@example.com"
+                                           value="{{ form.contact_email.value|default:user.email|default:'' }}"
+                                           required>
+                                    {% if form.contact_email.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ form.contact_email.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.contact_phone.id_for_label }}" class="form-label fw-bold">
+                                        Контактный телефон
+                                    </label>
+                                    <input type="text" 
+                                           name="{{ form.contact_phone.name }}"
+                                           id="{{ form.contact_phone.id_for_label }}"
+                                           class="form-control"
+                                           placeholder="+7 (999) 123-45-67"
+                                           value="{{ form.contact_phone.value|default:'' }}">
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.telegram.id_for_label }}" class="form-label fw-bold">
+                                        Telegram
+                                    </label>
+                                    <input type="text" 
+                                           name="{{ form.telegram.name }}"
+                                           id="{{ form.telegram.id_for_label }}"
+                                           class="form-control"
+                                           placeholder="@username"
+                                           value="{{ form.telegram.value|default:'' }}">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.portfolio_link.id_for_label }}" class="form-label fw-bold">
+                                        Ссылка на портфолио
+                                    </label>
+                                    <input type="url" 
+                                           name="{{ form.portfolio_link.name }}"
+                                           id="{{ form.portfolio_link.id_for_label }}"
+                                           class="form-control"
+                                           placeholder="https://ваше-портфолио.com"
+                                           value="{{ form.portfolio_link.value|default:'' }}">
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.github_link.id_for_label }}" class="form-label">
+                                        GitHub
+                                    </label>
+                                    <input type="url" 
+                                           name="{{ form.github_link.name }}"
+                                           id="{{ form.github_link.id_for_label }}"
+                                           class="form-control"
+                                           placeholder="https://github.com/ваш-профиль"
+                                           value="{{ form.github_link.value|default:'' }}">
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.linkedin_link.id_for_label }}" class="form-label">
+                                        LinkedIn
+                                    </label>
+                                    <input type="url" 
+                                           name="{{ form.linkedin_link.name }}"
+                                           id="{{ form.linkedin_link.id_for_label }}"
+                                           class="form-control"
+                                           placeholder="https://linkedin.com/in/ваш-профиль"
+                                           value="{{ form.linkedin_link.value|default:'' }}">
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.website_link.id_for_label }}" class="form-label">
+                                        Ваш сайт
+                                    </label>
+                                    <input type="url" 
+                                           name="{{ form.website_link.name }}"
+                                           id="{{ form.website_link.id_for_label }}"
+                                           class="form-control"
+                                           placeholder="https://ваш-сайт.com"
+                                           value="{{ form.website_link.value|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Шаг 5: Изображения (опционально) -->
+                        <div class="mb-5">
+                            <h4 class="text-primary border-bottom pb-2 mb-4">
+                                <span class="badge bg-primary me-2">5</span> Изображения для портфолио (опционально)
+                            </h4>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.images.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.images.label }}
+                                </label>
+                                <input type="file" 
+                                       name="{{ form.images.name }}"
+                                       id="{{ form.images.id_for_label }}"
+                                       class="form-control"
+                                       multiple
+                                       accept="image/*">
+                                <div class="form-text">
+                                    Загрузите изображения ваших работ для портфолио. 
+                                    Поддерживаемые форматы: JPG, PNG, GIF. Максимальный размер: 5MB на файл.
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading"><i class="bi bi-lightbulb"></i> Совет</h6>
+                                <p class="mb-0">
+                                    Добавление изображений работ увеличивает доверие клиентов на 70%! 
+                                    Покажите свои лучшие проекты.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Советы -->
+                        <div class="card bg-light mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary">
+                                    <i class="bi bi-star"></i> Советы для успешного объявления:
+                                </h5>
+                                <ul class="mb-0">
+                                    <li>Будьте конкретны в описании услуг</li>
+                                    <li>Укажите реальные примеры работ или кейсы</li>
+                                    <li>Добавьте ссылки на портфолио и соцсети</li>
+                                    <li>Укажите адекватные цены на рынке</li>
+                                    <li>Будьте готовы быстро отвечать на сообщения</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Кнопки -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'announcement:list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Отмена
+                            </a>
+                            <div>
+                                <button type="submit" name="draft" value="true" class="btn btn-outline-primary me-2">
+                                    <i class="bi bi-save"></i> Сохранить черновик
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    {% if form.instance.pk %}
+                                        <i class="bi bi-check-circle"></i> Обновить объявление
+                                    {% else %}
+                                        <i class="bi bi-rocket-takeoff"></i> Опубликовать объявление
+                                    {% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 10px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.form-label.required::after {
+    content: " *";
+    color: #dc3545;
+}
+
+.badge {
+    font-size: 0.9em;
+    padding: 0.5em 0.8em;
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+.step-badge {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем звездочки к обязательным полям
+    const requiredFields = ['title', 'description', 'category', 'experience', 'employment', 'skills', 'contact_email'];
+    requiredFields.forEach(fieldName => {
+        const label = document.querySelector(`label[for="id_${fieldName}"]`);
+        if (label && !label.innerHTML.includes('*')) {
+            label.classList.add('required');
+        }
+    });
+    
+    // Форматирование навыков
+    const skillsInput = document.getElementById('id_skills');
+    if (skillsInput) {
+        skillsInput.addEventListener('blur', function() {
+            // Убираем лишние пробелы и делаем уникальные навыки
+            let skills = this.value.split(',')
+                .map(skill => skill.trim())
+                .filter(skill => skill.length > 0)
+                .filter((skill, index, array) => array.indexOf(skill) === index);
+            this.value = skills.join(', ');
+        });
+    }
+    
+    // Показать/скрыть цены в зависимости от типа занятости
+    const employmentSelect = document.getElementById('id_employment');
+    const priceFields = document.getElementById('id_price_per_hour').closest('.col-6').parentElement;
+    
+    if (employmentSelect) {
+        employmentSelect.addEventListener('change', function() {
+            if (this.value === 'full' || this.value === 'part') {
+                priceFields.style.opacity = '0.5';
+                priceFields.querySelectorAll('input').forEach(input => {
+                    input.disabled = true;
+                });
+            } else {
+                priceFields.style.opacity = '1';
+                priceFields.querySelectorAll('input').forEach(input => {
+                    input.disabled = false;
+                });
+            }
+        });
+        
+        // Инициализация состояния
+        employmentSelect.dispatchEvent(new Event('change'));
+    }
+    
+    // Подсказки при наведении
+    const tooltips = {
+        'title': 'Кратко и понятно опишите свою специализацию',
+        'description': 'Расскажите о своем опыте, подходах, успешных проектах',
+        'skills': 'Укажите ключевые навыки, по которым вас будут искать',
+        'price_per_hour': 'Рекомендуемая ставка для вашего уровня и региона',
+        'price_per_project': 'Примерная стоимость типового проекта'
+    };
+    
+    // Добавляем подсказки при наведении
+    Object.keys(tooltips).forEach(fieldId => {
+        const input = document.getElementById(`id_${fieldId}`);
+        const label = document.querySelector(`label[for="id_${fieldId}"]`);
+        if (input && label) {
+            input.title = tooltips[fieldId];
+            label.title = tooltips[fieldId];
+        }
+    });
+});
+</script>
+{% endblock %}

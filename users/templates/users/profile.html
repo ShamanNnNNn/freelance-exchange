@@ -7,28 +7,28 @@
         <div class="row">
             <!-- Профиль с данными пользователя -->
             <div class="col-md-5">
-                <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow">
+                <div class="bg-white p-4 mb-4 mx-2 rounded custom-shadow">
                     <h3 class="text-center mb-4">Профиль пользователя</h3>
-                    <form action="{% url "users:profile" %}" method="post" enctype="multipart/form-data">
+                    <form action="{% url 'users:profile' %}" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-md-12 mb-3 text-center">
                                 {% if user.image %}
-                                <img src="{{ user.image.url }}"
-                                    alt="Аватар пользователя" class="img-fluid rounded-circle"
-                                    style="max-width: 150px;">
+                                    <img src="{{ user.image.url }}"
+                                        alt="Аватар пользователя" class="img-fluid rounded-circle"
+                                        style="max-width: 150px;">
                                 {% else %}
-                                <img src="{% static "deps/images/baseavatar.jpg" %}"
-                                    alt="Аватар пользователя" class="img-fluid rounded-circle"
-                                    style="max-width: 150px;">
+                                    <img src="{% static 'deps/images/baseavatar.jpg' %}"
+                                        alt="Аватар пользователя" class="img-fluid rounded-circle"
+                                        style="max-width: 150px;">
                                 {% endif %}
                                 
                                 <input type="file" class="form-control mt-3" id="id_image"
                                     name='image'
                                     accept="image/*">
-                                    {% if form.image.errors %}
-                                    <div class="alert alert-danger alert-dismissible fabe show">{{form.image.errors}}</div>
-                                    {% endif %}
+                                {% if form.image.errors %}
+                                    <div class="alert alert-danger alert-dismissible fade show">{{ form.image.errors }}</div>
+                                {% endif %}
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="id_first_name" class="form-label">Имя*</label>
@@ -37,9 +37,9 @@
                                     placeholder="Введите ваше имя"
                                     value="{{ form.first_name.value }}"
                                     required>
-                                    {% if form.first_name.errors %}
-                                    <div class="alert alert-danger alert-dismissible fabe show">{{form.first_name.errors}}</div>
-                                    {% endif %}
+                                {% if form.first_name.errors %}
+                                    <div class="alert alert-danger alert-dismissible fade show">{{ form.first_name.errors }}</div>
+                                {% endif %}
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="id_last_name" class="form-label">Фамилия*</label>
@@ -48,9 +48,9 @@
                                     placeholder="Введите вашу фамилию"
                                     value="{{ form.last_name.value }}"
                                     required>
-                                    {% if form.last_name.errors %}
-                                    <div class="alert alert-danger alert-dismissible fabe show">{{form.last_name.errors}}</div>
-                                    {% endif %}
+                                {% if form.last_name.errors %}
+                                    <div class="alert alert-danger alert-dismissible fade show">{{ form.last_name.errors }}</div>
+                                {% endif %}
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="id_username" class="form-label">Имя пользователя*</label>
@@ -59,9 +59,9 @@
                                     placeholder="Введите ваше имя пользователя"
                                     value="{{ form.username.value }}"
                                     required>
-                                    {% if form.username.errors %}
-                                    <div class="alert alert-danger alert-dismissible fabe show">{{form.username.errors}}</div>
-                                    {% endif %}
+                                {% if form.username.errors %}
+                                    <div class="alert alert-danger alert-dismissible fade show">{{ form.username.errors }}</div>
+                                {% endif %}
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="id_email" class="form-label">Email*</label>
@@ -70,61 +70,206 @@
                                     placeholder="Введите ваш email *youremail@example.com" 
                                     value="{{ form.email.value }}"
                                     required>
-                                    {% if form.email.errors %}
-                                    <div class="alert alert-danger alert-dismissible fabe show">{{form.email.errors}}</div>
-                                    {% endif %}
+                                {% if form.email.errors %}
+                                    <div class="alert alert-danger alert-dismissible fade show">{{ form.email.errors }}</div>
+                                {% endif %}
                             </div>
                         </div>
                         <button type="submit" class="btn btn-dark">Сохранить</button>
                     </form>
                 </div>
+                
+                <!-- Статистика пользователя -->
+                <div class="bg-white p-4 mb-4 mx-2 rounded custom-shadow">
+                    <h3 class="text-center mb-4">Моя статистика</h3>
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <div class="display-6 text-primary">{{ user_orders.count|default:0 }}</div>
+                                    <div class="text-muted">Мои заказы</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <div class="display-6 text-success">{{ user_announcements.count|default:0 }}</div>
+                                    <div class="text-muted">Мои объявления</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <div class="display-6 text-info">{{ completed_orders|default:0 }}</div>
+                                    <div class="text-muted">Завершенные</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <div class="display-6 text-warning">{{ in_progress_orders|default:0 }}</div>
+                                    <div class="text-muted">В работе</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-<!-- Замените текущий блок "Корзина" на этот: -->
-<div class="col-md-7">
-    <div class="bg-white p-4 mb-4 mx-2 rounded custom-shadow">
-        <h3 class="text-center mb-4">Действия</h3>
-        <div class="d-grid gap-3">
-            <!-- Кнопка создания нового заказа -->
-            <a href="{% url 'order:create' %}" class="btn btn-primary btn-lg">
-                <i class="bi bi-plus-circle"></i> Создать новый заказ
-            </a>
             
-            <!-- Кнопка просмотра моих заказов -->
-            <a href="{% url 'order:my_orders' %}" class="btn btn-outline-primary">  <!-- ИЗМЕНИТЬ ЗДЕСЬ -->
-                <i class="bi bi-list-ul"></i> Все мои заказы
-            </a>
+            <!-- Действия и объявления -->
+            <div class="col-md-7">
+                <!-- Блок действий -->
+                <div class="bg-white p-4 mb-4 mx-2 rounded custom-shadow">
+                    <h3 class="text-center mb-4">Действия</h3>
+                    <div class="d-grid gap-3">
+                        <!-- Кнопка создания нового заказа -->
+                        <a href="{% url 'order:create' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-plus-circle"></i> Создать новый заказ
+                        </a>
+                        
+                        <!-- Кнопка создания нового объявления -->
+                        <a href="{% url 'announcement:create' %}" class="btn btn-success btn-lg">
+                            <i class="bi bi-megaphone"></i> Создать объявление
+                        </a>
+                        
+                        <!-- Кнопка просмотра моих заказов -->
+                        <a href="{% url 'order:my_orders' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-list-ul"></i> Все мои заказы
+                        </a>
+                        
+                        <!-- Кнопка просмотра моих объявлений -->
+                        <a href="{% url 'announcement:my_announcements' %}" class="btn btn-outline-success">
+                            <i class="bi bi-card-checklist"></i> Мои объявления
+                        </a>
+                        
+                        <!-- Кнопка просмотра всех заказов на бирже -->
+                        <a href="{% url 'order:all_orders' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-search"></i> Найти заказ
+                        </a>
+                        
+                        <!-- Кнопка просмотра всех объявлений -->
+                        <a href="{% url 'announcement:all_announcements' %}" class="btn btn-outline-info">
+                            <i class="bi bi-people"></i> Найти исполнителя
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Мои активные объявления -->
+                <div class="bg-white p-4 mb-4 mx-2 rounded custom-shadow">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="mb-0">Мои объявления</h3>
+                        <a href="{% url 'announcement:my_announcements' %}" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-plus-circle"></i> Все объявления
+                        </a>
+                    </div>
+                    
+                    {% if user_announcements %}
+                        <div class="row">
+                            {% for announcement in user_announcements|slice:":2" %}
+                            <div class="col-12 mb-3">
+                                <div class="card border-success">
+                                    <div class="card-header bg-transparent border-success d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-{% if announcement.is_active %}success{% else %}secondary{% endif %}">
+                                            {% if announcement.is_active %}Активно{% else %}Неактивно{% endif %}
+                                        </span>
+                                        <span class="badge bg-{% if announcement.is_premium %}warning{% else %}info{% endif %}">
+                                            {% if announcement.is_premium %}Премиум{% else %}Обычное{% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <a href="{% url 'announcement:detail' announcement.pk %}" class="text-decoration-none text-dark">
+                                                {{ announcement.title|truncatechars:40 }}
+                                            </a>
+                                        </h5>
+                                        <p class="card-text text-muted small">
+                                            {{ announcement.short_description|default:announcement.description|truncatechars:80 }}
+                                        </p>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Категория</small>
+                                                <div><strong>{{ announcement.get_category_display }}</strong></div>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Ставка</small>
+                                                <div><strong>
+                                                    {% if announcement.price_per_hour %}
+                                                        {{ announcement.price_per_hour }} {{ announcement.get_currency_display }}/час
+                                                    {% elif announcement.price_per_project %}
+                                                        {{ announcement.price_per_project }} {{ announcement.get_currency_display }}/проект
+                                                    {% else %}
+                                                        По договоренности
+                                                    {% endif %}
+                                                </strong></div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-3">
+                                            <a href="{% url 'announcement:detail' announcement.pk %}" class="btn btn-outline-success btn-sm">
+                                                <i class="bi bi-eye"></i> Просмотреть
+                                            </a>
+                                            <a href="{% url 'announcement:edit' announcement.pk %}" class="btn btn-outline-warning btn-sm">
+                                                <i class="bi bi-pencil"></i> Редактировать
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        {% if user_announcements.count > 2 %}
+                        <div class="text-center mt-3">
+                            <a href="{% url 'announcement:my_announcements' %}" class="btn btn-outline-success btn-sm">
+                                Показать все объявления ({{ user_announcements.count }})
+                            </a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-megaphone display-4 text-muted"></i>
+                            <h5 class="text-muted mt-3">У вас пока нет объявлений</h5>
+                            <p class="text-muted small mb-3">Создайте объявление, чтобы предлагать свои услуги на бирже</p>
+                            <a href="{% url 'announcement:create' %}" class="btn btn-success">
+                                <i class="bi bi-plus-circle"></i> Создать первое объявление
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
             
-            <!-- Кнопка просмотра всех заказов на бирже -->
-            <a href="{% url 'order:all_orders' %}" class="btn btn-outline-secondary">  <!-- ДОБАВИТЬ -->
-                <i class="bi bi-search"></i> Найти заказ
-            </a>
-            
-            <!-- Кнопка для исполнителей (если нужна) -->
-            {% if user.profile.is_freelancer %}
-            <a href="#" class="btn btn-outline-success">
-                <i class="bi bi-briefcase"></i> Доступные заказы
-            </a>
-            {% endif %}
-        </div>
-    </div>
-</div>
-            <!-- Оформленные заказы -->
+            <!-- Мои заказы (все еще на полную ширину внизу) -->
             <div class="col-md-12">
-                <div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow">
-                    <h3 class="text-center mb-4">Мои заказы</h3>
-                    <!-- Разметка заказов -->
-                    <div class="container">
+                <div class="bg-white p-4 mb-4 mx-2 rounded custom-shadow">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="mb-0">Мои заказы</h3>
+                        <a href="{% url 'order:my_orders' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-plus-circle"></i> Все заказы
+                        </a>
+                    </div>
+                    
+                    {% if user_orders %}
                         <div class="accordion" id="accordionExample">
-                            <!-- Здесь можно выводить реальные заказы пользователя -->
                             {% for order in user_orders|slice:":5" %}
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="heading{{ order.id }}">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ order.id }}" aria-expanded="false" aria-controls="collapse{{ order.id }}">
-                                        Заказ № {{ order.id }} - {{ order.created_at|date:"d M Y H:i" }} | 
-                                        Статус: <strong class="mx-2 {{ order.status }}">{{ order.get_status_display }}</strong>
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                            data-bs-target="#collapse{{ order.id }}" aria-expanded="false" 
+                                            aria-controls="collapse{{ order.id }}">
+                                        Заказ №{{ order.id }} - {{ order.created_at|date:"d M Y H:i" }} | 
+                                        Статус: <strong class="mx-2 
+                                            {% if order.status == 'open' %}text-primary
+                                            {% elif order.status == 'in_progress' %}text-warning
+                                            {% elif order.status == 'completed' %}text-success
+                                            {% else %}text-secondary{% endif %}">
+                                            {{ order.get_status_display }}
+                                        </strong>
                                     </button>
                                 </h2>
-                                <div id="collapse{{ order.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ order.id }}" data-bs-parent="#accordionExample">
+                                <div id="collapse{{ order.id }}" class="accordion-collapse collapse" 
+                                     aria-labelledby="heading{{ order.id }}" data-bs-parent="#accordionExample">
                                     <div class="accordion-body">
                                         <h5>{{ order.title }}</h5>
                                         <p>{{ order.description|truncatechars:200 }}</p>
@@ -164,20 +309,18 @@
                                             <a href="{% url 'order:detail' order.pk %}" class="btn btn-primary btn-sm">
                                                 <i class="bi bi-eye"></i> Подробнее
                                             </a>
+                                            {% if order.customer == user and order.status == 'open' %}
+                                            <a href="{% url 'order:edit' order.pk %}" class="btn btn-warning btn-sm">
+                                                <i class="bi bi-pencil"></i> Редактировать
+                                            </a>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            {% empty %}
-                            <div class="text-center py-4">
-                                <i class="bi bi-inbox display-4 text-muted"></i>
-                                <h5 class="text-muted mt-3">У вас пока нет заказов</h5>
-                                <a href="{% url 'order:create' %}" class="btn btn-primary mt-2">
-                                    <i class="bi bi-plus-circle"></i> Создать первый заказ
-                                </a>
-                            </div>
                             {% endfor %}
                         </div>
+                        
                         {% if user_orders.count > 5 %}
                         <div class="text-center mt-3">
                             <a href="{% url 'order:my_orders' %}" class="btn btn-outline-dark">
@@ -185,11 +328,43 @@
                             </a>
                         </div>
                         {% endif %}
-                    </div>
-                    <!-- Закончилась разметка заказов -->
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox display-4 text-muted"></i>
+                            <h5 class="text-muted mt-3">У вас пока нет заказов</h5>
+                            <p class="text-muted small mb-3">Создайте заказ, чтобы найти исполнителя для вашего проекта</p>
+                            <a href="{% url 'order:create' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Создать первый заказ
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.custom-shadow {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.card {
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+.badge {
+    font-size: 0.75em;
+    padding: 0.3em 0.6em;
+}
+</style>
 {% endblock %}

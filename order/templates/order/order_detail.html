@@ -10,10 +10,25 @@
             <div class="card shadow mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h3 class="mb-0">{{ order.title }}</h3>
-                    <span class="badge bg-{% if order.status == 'open' %}primary{% elif order.status == 'in_progress' %}warning{% elif order.status == 'completed' %}success{% else %}secondary{% endif %} fs-6">
+                    <span class="badge bg-{% if order.status == 'open' %}primary{% elif order.status == 'in_progress' %}warning{% elif order.status == 'completed' %}success{% elif order.status == 'cancelling' %}danger{% else %}secondary{% endif %} fs-6">
                         {{ order.get_status_display }}
                     </span>
                 </div>
+                
+                <!-- Уведомление об отмене -->
+                {% if order.status == 'cancelling' %}
+                <div class="alert alert-warning alert-dismissible fade show m-3" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Заказ в процессе отмены!</strong>
+                    {% if order.customer == user %}
+                        Ожидается подтверждение от исполнителя. Вы можете отозвать запрос.
+                    {% elif order.freelancer == user %}
+                        Заказчик отправил запрос на отмену заказа. Пожалуйста, подтвердите или отклоните отмену.
+                    {% endif %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+                
                 <div class="card-body">
                     <!-- Основная информация -->
                     <div class="mb-4">
@@ -46,6 +61,14 @@
                                     <span>Дата обновления:</span>
                                     <strong>{{ order.updated_at|date:"d.m.Y H:i" }}</strong>
                                 </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Откликов:</span>
+                                    <strong>{{ order.applications_count }}</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Просмотров:</span>
+                                    <strong>{{ order.views_count }}</strong>
+                                </li>
                             </ul>
                         </div>
                         
@@ -64,6 +87,7 @@
                                         <div class="flex-grow-1 ms-3">
                                             <strong>Заказчик:</strong>
                                             <div>{{ order.customer.get_full_name|default:order.customer.username }}</div>
+                                            <small class="text-muted">@{{ order.customer.username }}</small>
                                         </div>
                                     </div>
                                 </li>
@@ -80,6 +104,7 @@
                                         <div class="flex-grow-1 ms-3">
                                             <strong>Исполнитель:</strong>
                                             <div>{{ order.freelancer.get_full_name|default:order.freelancer.username }}</div>
+                                            <small class="text-muted">@{{ order.freelancer.username }}</small>
                                         </div>
                                     </div>
                                 </li>
@@ -93,9 +118,11 @@
                     <div class="mb-4">
                         <h5 class="text-primary mb-3">Теги</h5>
                         <div class="d-flex flex-wrap gap-2">
-                            {% for tag in order.tags.split|slice:":10" %}
-                                <span class="badge bg-secondary">{{ tag|cut:"," }}</span>
-                            {% endfor %}
+                            {% with tags=order.tags.split|slice:":10" %}
+                                {% for tag in tags %}
+                                    <span class="badge bg-secondary">{{ tag|cut:"," }}</span>
+                                {% endfor %}
+                            {% endwith %}
                         </div>
                     </div>
                     {% endif %}
@@ -117,30 +144,148 @@
                         </div>
                     </div>
                     {% endif %}
+                    
+                    <!-- Отклики на заказ (только для заказчика) -->
+                    {% if order.customer == user and applications %}
+                    <div class="mt-5">
+                        <h5 class="text-primary mb-3">Отклики на заказ ({{ applications|length }})</h5>
+                        <div class="list-group">
+                            {% for application in applications %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-center">
+                                            {% if application.freelancer.image %}
+                                                <img src="{{ application.freelancer.image.url }}" alt="Аватар" class="rounded-circle me-2" width="40" height="40">
+                                            {% else %}
+                                                <img src="{% static 'deps/images/baseavatar.jpg' %}" alt="Аватар" class="rounded-circle me-2" width="40" height="40">
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ application.freelancer.get_full_name|default:application.freelancer.username }}</strong>
+                                                <div class="text-muted">@{{ application.freelancer.username }}</div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-{% if application.status == 'pending' %}warning{% elif application.status == 'accepted' %}success{% elif application.status == 'rejected' %}danger{% else %}secondary{% endif %}">
+                                                {{ application.get_status_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-2">
+                                        <strong>Сообщение:</strong>
+                                        <p class="mb-1">{{ application.message }}</p>
+                                    </div>
+                                    
+                                    <div class="mb-2">
+                                        <strong>Предложенная цена:</strong>
+                                        <span>{{ application.display_price }}</span>
+                                    </div>
+                                    
+                                    <div class="text-muted mb-3">
+                                        <small>Отправлено: {{ application.created_at|date:"d.m.Y H:i" }}</small>
+                                        {% if application.responded_at %}
+                                            <small> | Ответ: {{ application.responded_at|date:"d.m.Y H:i" }}</small>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if application.status == 'pending' and order.status == 'open' %}
+                                        <div class="d-flex gap-2">
+                                            <form method="post" action="{% url 'order:accept_application' order.pk application.pk %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-success btn-sm" 
+                                                        onclick="return confirm('Вы уверены, что хотите принять этого исполнителя?')">
+                                                    <i class="bi bi-check-lg"></i> Принять
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{% url 'order:reject_application' order.pk application.pk %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btn-sm"
+                                                        onclick="return confirm('Вы уверены, что хотите отклонить этого исполнителя?')">
+                                                    <i class="bi bi-x-lg"></i> Отклонить
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
                 
                 <!-- Действия -->
                 <div class="card-footer">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between flex-wrap gap-2">
                         <div>
-                            <a href="{% url 'order:list' %}" class="btn btn-outline-secondary">
+                            <a href="{% url 'order:all_orders' %}" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left"></i> К списку заказов
                             </a>
                         </div>
-                        <div>
-                            {% if order.customer == user and order.status == 'open' %}
-                                <a href="{% url 'order:edit' order.pk %}" class="btn btn-primary">
-                                    <i class="bi bi-pencil"></i> Редактировать
-                                </a>
-                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
-                                    <i class="bi bi-x-circle"></i> Отменить
-                                </button>
-                            {% endif %}
-                            
-                            {% if user != order.customer and order.status == 'open' %}
-                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#applyModal">
-                                    <i class="bi bi-check-circle"></i> Откликнуться
-                                </button>
+                        <div class="d-flex gap-2">
+                            {% if order.customer == user %}
+                                {% if order.status == 'open' %}
+                                    <a href="{% url 'order:edit' order.pk %}" class="btn btn-primary">
+                                        <i class="bi bi-pencil"></i> Редактировать
+                                    </a>
+                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelOpenModal">
+                                        <i class="bi bi-x-circle"></i> Отменить заказ
+                                    </button>
+                                {% elif order.status == 'in_progress' %}
+                                    {% if order.cancellation_request %}
+                                        {% if user_application.status == 'pending' %}
+                                            <form method="post" action="{% url 'order:withdraw_application' order.pk user_application.pk %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger"
+                                                        onclick="return confirm('Вы уверены, что хотите отозвать свой отклик?')">
+                                                    <i class="bi bi-x-circle"></i> Отозвать
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% else %}
+                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelInProgressModal">
+                                            <i class="bi bi-x-circle"></i> Запросить отмену
+                                        </button>
+                                    {% endif %}
+                                {% endif %}
+                                
+                            {% else %}
+                                <!-- Для других пользователей -->
+                                {% if user_application %}
+                                    <span class="btn btn-secondary">
+                                        <i class="bi bi-clock-history"></i> Ваш отклик: {{ user_application.get_status_display }}
+                                    </span>
+                                    {% if user_application.status == 'pending' %}
+                                        <form method="post" action="{% url 'order:withdraw_application' order.pk user_application.pk %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-danger"
+                                                    onclick="return confirm('Вы уверены, что хотите отозвать свой отклик?')">
+                                                <i class="bi bi-x-circle"></i> Отозвать
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                {% elif order.status == 'open' %}
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#applyModal">
+                                        <i class="bi bi-check-circle"></i> Откликнуться
+                                    </button>
+                                {% endif %}
+                                
+                                <!-- Кнопки для исполнителя при запросе отмены -->
+                                {% if order.freelancer == user and order.status == 'cancelling' %}
+                                    <form method="post" action="{% url 'order:confirm_cancellation' order.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger"
+                                                onclick="return confirm('Подтвердить отмену заказа? Это действие необратимо.')">
+                                            <i class="bi bi-check-circle"></i> Подтвердить отмену
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'order:reject_cancellation' order.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-secondary"
+                                                onclick="return confirm('Отклонить запрос на отмену?')">
+                                            <i class="bi bi-x-circle"></i> Отклонить отмену
+                                        </button>
+                                    </form>
+                                {% endif %}
                             {% endif %}
                             
                             {% if order.freelancer == user and order.status == 'in_progress' %}
@@ -152,16 +297,6 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Комментарии/Обсуждение (если нужно) -->
-            <div class="card shadow">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Обсуждение заказа</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted text-center">Система комментариев будет добавлена позже</p>
-                </div>
-            </div>
         </div>
         
         <!-- Боковая панель -->
@@ -169,7 +304,7 @@
             <!-- Статистика -->
             <div class="card shadow mb-4">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">Статистика</h5>
+                    <h5 class="mb-0">Статистика заказа</h5>
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-3">
@@ -182,12 +317,14 @@
                             {% if order.status == 'open' %}bg-primary
                             {% elif order.status == 'in_progress' %}bg-warning
                             {% elif order.status == 'completed' %}bg-success
+                            {% elif order.status == 'cancelling' %}bg-danger
                             {% else %}bg-secondary{% endif %}" 
                             role="progressbar" 
                             style="width: 
                                 {% if order.status == 'open' %}25%
                                 {% elif order.status == 'in_progress' %}50%
                                 {% elif order.status == 'completed' %}100%
+                                {% elif order.status == 'cancelling' %}75%
                                 {% else %}0%{% endif %};">
                         </div>
                     </div>
@@ -203,6 +340,23 @@
                             <div class="fw-bold">Завершен</div>
                         </div>
                     </div>
+                    
+                    <hr>
+                    
+                    <div class="row text-center">
+                        <div class="col">
+                            <div class="fw-bold">{{ order.views_count }}</div>
+                            <div class="text-muted small">Просмотров</div>
+                        </div>
+                        <div class="col">
+                            <div class="fw-bold">{{ order.applications_count }}</div>
+                            <div class="text-muted small">Откликов</div>
+                        </div>
+                        <div class="col">
+                            <div class="fw-bold">{{ order.days_left }}</div>
+                            <div class="text-muted small">Дней осталось</div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -216,82 +370,207 @@
                         <a href="{% url 'order:create' %}" class="list-group-item list-group-item-action">
                             <i class="bi bi-plus-circle text-primary"></i> Создать новый заказ
                         </a>
-                        <a href="{% url 'order:list' %}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-list-ul text-primary"></i> Все мои заказы
+                        <a href="{% url 'order:my_orders' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-list-ul text-primary"></i> Мои заказы
                         </a>
-                        <a href="{% url 'order:list' %}?status=open" class="list-group-item list-group-item-action">
-                            <i class="bi bi-clock text-warning"></i> Открытые заказы
-                        </a>
-                        <a href="{% url 'order:list' %}?status=in_progress" class="list-group-item list-group-item-action">
-                            <i class="bi bi-gear text-info"></i> Заказы в работе
-                        </a>
-                        {% if user == order.customer %}
-                            <a href="{% url 'order:edit' order.pk %}" class="list-group-item list-group-item-action">
-                                <i class="bi bi-pencil text-success"></i> Редактировать этот заказ
+                        {% if order.customer == user %}
+                            {% if order.status == 'open' %}
+                                <a href="{% url 'order:edit' order.pk %}" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-pencil text-success"></i> Редактировать заказ
+                                </a>
+                            {% endif %}
+                            {% if order.status == 'in_progress' and not order.cancellation_request %}
+                                <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#cancelInProgressModal">
+                                    <i class="bi bi-x-circle text-danger"></i> Запросить отмену
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                        {% if user.is_authenticated and user != order.customer and not user_application %}
+                            <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#applyModal">
+                                <i class="bi bi-check-circle text-success"></i> Откликнуться
                             </a>
                         {% endif %}
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно для отмены заказа -->
-{% if order.customer == user and order.status == 'open' %}
-<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="cancelModalLabel">Отмена заказа</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Вы уверены, что хотите отменить этот заказ?</p>
-                <p class="text-muted">Это действие нельзя будет отменить.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <form method="post" action="{% url 'order:cancel' order.pk %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Да, отменить</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Модальное окно для отклика -->
-{% if user != order.customer and order.status == 'open' %}
-<div class="modal fade" id="applyModal" tabindex="-1" aria-labelledby="applyModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="applyModalLabel">Отклик на заказ</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="post" action="{% url 'order:apply' order.pk %}">
-                <div class="modal-body">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="message" class="form-label">Ваше сообщение заказчику</label>
-                        <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
-                        <div class="form-text">Расскажите, почему вы подходите для этого задания</div>
+            
+            <!-- Информация о пользователе -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">О заказчике</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if order.customer.image %}
+                        <img src="{{ order.customer.image.url }}" alt="Аватар" class="rounded-circle mb-3" width="80" height="80">
+                    {% else %}
+                        <img src="{% static 'deps/images/baseavatar.jpg' %}" alt="Аватар" class="rounded-circle mb-3" width="80" height="80">
+                    {% endif %}
+                    <h6>{{ order.customer.get_full_name|default:order.customer.username }}</h6>
+                    <div class="text-muted">@{{ order.customer.username }}</div>
+                    <div class="small mt-2">
+                        <div><i class="bi bi-calendar3"></i> На сайте с: {{ order.customer.date_joined|date:"d.m.Y" }}</div>
+                        <div><i class="bi bi-briefcase"></i> Заказов: {{ order.customer.orders_as_customer.count }}</div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальные окна -->
+{% include 'order/modals/apply_modal.html' %}
+{% include 'order/modals/complete_modal.html' %}
+
+<!-- Модальное окно для отмены открытого заказа -->
+{% if order.customer == user and order.status == 'open' %}
+<div class="modal fade" id="cancelOpenModal" tabindex="-1" aria-labelledby="cancelOpenModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="cancelOpenModalLabel">
+                    <i class="bi bi-exclamation-triangle"></i> Отмена заказа
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'order:cancel' order.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <strong>Внимание!</strong> Это действие нельзя будет отменить.
+                    </div>
+                    
+                    <p>Вы уверены, что хотите отменить заказ <strong>"{{ order.title }}"</strong>?</p>
+                    
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6>Информация о заказе:</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Бюджет:</strong> {{ order.budget }} {{ order.get_currency_display }}</li>
+                                <li><strong>Срок:</strong> {{ order.deadline|date:"d.m.Y" }}</li>
+                                <li><strong>Откликов:</strong> {{ order.applications_count }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
                     <div class="mb-3">
-                        <label for="proposed_price" class="form-label">Предлагаемая цена (опционально)</label>
-                        <input type="number" class="form-control" id="proposed_price" name="proposed_price" min="0" step="0.01">
-                        <div class="form-text">Если хотите предложить другую цену</div>
+                        <label for="cancel_reason" class="form-label">Причина отмены (опционально):</label>
+                        <textarea class="form-control" id="cancel_reason" name="cancel_reason" rows="3" 
+                                  placeholder="Почему вы отменяете заказ?"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-success">Отправить отклик</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Отмена
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle"></i> Да, отменить заказ
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 {% endif %}
+
+<!-- Модальное окно для запроса отмены заказа в работе -->
+{% if order.customer == user and order.status == 'in_progress' %}
+<div class="modal fade" id="cancelInProgressModal" tabindex="-1" aria-labelledby="cancelInProgressModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="cancelInProgressModalLabel">
+                    <i class="bi bi-exclamation-triangle"></i> Запрос на отмену
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'order:request_cancellation' order.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Заказ уже в работе.</strong> Для отмены требуется подтверждение исполнителя.
+                    </div>
+                    
+                    <p>Вы собираетесь отправить запрос на отмену заказа <strong>"{{ order.title }}"</strong> исполнителю.</p>
+                    
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6>Исполнитель:</h6>
+                            <div class="d-flex align-items-center">
+                                {% if order.freelancer.image %}
+                                    <img src="{{ order.freelancer.image.url }}" alt="Аватар" class="rounded-circle me-2" width="40" height="40">
+                                {% else %}
+                                    <img src="{% static 'deps/images/baseavatar.jpg' %}" alt="Аватар" class="rounded-circle me-2" width="40" height="40">
+                                {% endif %}
+                                <div>
+                                    <strong>{{ order.freelancer.get_full_name|default:order.freelancer.username }}</strong>
+                                    <div class="text-muted">@{{ order.freelancer.username }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="cancel_reason" class="form-label">Причина отмены:</label>
+                        <textarea class="form-control" id="cancel_reason" name="cancel_reason" rows="3" 
+                                  placeholder="Пожалуйста, укажите причину отмены заказа..." required></textarea>
+                        <div class="form-text">Исполнитель увидит эту причину при рассмотрении запроса.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Отмена
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-send"></i> Отправить запрос
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Автоматическое закрытие модальных окон после отправки формы
+document.addEventListener('DOMContentLoaded', function() {
+    const modals = ['applyModal', 'cancelOpenModal', 'cancelInProgressModal', 'completeModal'];
+    
+    modals.forEach(modalId => {
+        const modalElement = document.getElementById(modalId);
+        if (modalElement) {
+            const forms = modalElement.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) {
+                        modal.hide();
+                    }
+                });
+            });
+        }
+    });
+    
+    // Обработка подтверждений перед отправкой форм
+    const confirmButtons = document.querySelectorAll('button[onclick*="confirm"]');
+    confirmButtons.forEach(button => {
+        const originalOnClick = button.getAttribute('onclick');
+        button.removeAttribute('onclick');
+        button.addEventListener('click', function(e) {
+            const result = confirm('Вы уверены, что хотите выполнить это действие?');
+            if (result) {
+                // Находим родительскую форму и отправляем
+                const form = button.closest('form');
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

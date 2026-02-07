@@ -1,0 +1,50 @@
+{% if order.freelancer == user and order.status == 'in_progress' %}
+<div class="modal fade" id="completeModal" tabindex="-1" aria-labelledby="completeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="completeModalLabel">
+                    <i class="bi bi-check2-circle"></i> Завершение заказа
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i>
+                    <strong>Поздравляем!</strong> Вы готовы завершить работу над заказом.
+                </div>
+                
+                <p>Вы уверены, что хотите отметить заказ <strong>"{{ order.title }}"</strong> как завершенный?</p>
+                
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6>Информация о заказе:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Заказчик:</strong> {{ order.customer.get_full_name|default:order.customer.username }}</li>
+                            <li><strong>Бюджет:</strong> {{ order.budget }} {{ order.get_currency_display }}</li>
+                            <li><strong>Срок:</strong> {{ order.deadline|date:"d.m.Y" }}</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="completion_notes" class="form-label">Примечания к завершению (опционально):</label>
+                    <textarea class="form-control" id="completion_notes" name="completion_notes" rows="3" 
+                              placeholder="Кратко опишите проделанную работу, особенности выполнения..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Отмена
+                </button>
+                <form method="post" action="{% url 'order:complete' order.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check2-circle"></i> Да, завершить заказ
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

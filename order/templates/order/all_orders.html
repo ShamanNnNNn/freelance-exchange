@@ -4,6 +4,42 @@
 
 {% block content %}
 <div class="container py-4">
+    
+    <!-- ДЕБАГ ИНФОРМАЦИЯ -->
+    <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+        <small class="text-muted">
+            🔍 Поисковый запрос: <strong>{{ search_query|default:"НЕТ" }}</strong> |
+            🎯 Найдено: <strong>{{ orders.paginator.count }}</strong> заказов |
+            📄 Страница: <strong>{{ orders.number }}</strong> из {{ orders.paginator.num_pages }}
+        </small>
+    </div>
+    
+    <!-- Если есть поиск но нет результатов -->
+    {% if search_query and orders.paginator.count == 0 %}
+        <div class="alert alert-warning">
+            <h5>⚠️ Ничего не найдено</h5>
+            <p>По запросу <strong>"{{ search_query }}"</strong> заказов не найдено.</p>
+            <p>Попробуйте:</p>
+            <ul>
+                <li>Искать другое слово</li>
+                <li>Проверить правильность написания</li>
+                <li>Искать часть слова (например, "прив" вместо "привет")</li>
+            </ul>
+            <a href="{% url 'order:all_orders' %}" class="btn btn-outline-primary">Показать все заказы</a>
+        </div>
+    {% endif %}
+    
+    <!-- Если есть поиск и есть результаты -->
+    {% if search_query and orders.paginator.count > 0 %}
+        <div class="alert alert-success">
+            <h5>✅ Найдено {{ orders.paginator.count }} заказов</h5>
+            <p>По запросу: <strong>"{{ search_query }}"</strong></p>
+            <a href="{% url 'order:all_orders' %}" class="btn btn-sm btn-outline-success">
+                Очистить поиск
+            </a>
+        </div>
+    {% endif %}
+
     <!-- Фильтры для заказов -->
     <div class="dropdown mb-3">
         <button class="btn btn-secondary dropdown-toggle btn-dark" type="button" data-bs-toggle="dropdown"

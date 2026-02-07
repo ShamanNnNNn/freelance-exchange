@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h3 class="mb-0">
+                        <i class="bi bi-pencil me-2"></i>
+                        Редактировать объявление
+                    </h3>
+                    <small class="text-muted">ID: {{ announcement.id }}</small>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Блок основной информации -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Основная информация
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">
+                                    Заголовок объявления *
+                                </label>
+                                <input type="text" 
+                                       name="title" 
+                                       class="form-control {% if form.title.errors %}is-invalid{% endif %}" 
+                                       value="{{ form.title.value|default:'' }}"
+                                       required>
+                                {% if form.title.errors %}
+                                <div class="invalid-feedback">{{ form.title.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.category.id_for_label }}" class="form-label fw-bold">
+                                        Категория *
+                                    </label>
+                                    {{ form.category }}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.currency.id_for_label }}" class="form-label fw-bold">
+                                        Валюта
+                                    </label>
+                                    {{ form.currency }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Блок описания -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-text-paragraph me-2"></i>
+                                Описание
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.short_description.id_for_label }}" class="form-label">
+                                    Краткое описание *
+                                </label>
+                                <textarea name="short_description" 
+                                          class="form-control" 
+                                          rows="3"
+                                          required>{{ form.short_description.value|default:'' }}</textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">
+                                    Полное описание *
+                                </label>
+                                <textarea name="description" 
+                                          class="form-control" 
+                                          rows="6"
+                                          required>{{ form.description.value|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Блок цен -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-currency-exchange me-2"></i>
+                                Стоимость услуг
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.price_per_hour.id_for_label }}" class="form-label">
+                                        Цена за час
+                                    </label>
+                                    <input type="number" 
+                                           name="price_per_hour" 
+                                           class="form-control" 
+                                           value="{{ form.price_per_hour.value|default:'' }}"
+                                           step="0.01"
+                                           min="0">
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.price_per_day.id_for_label }}" class="form-label">
+                                        Цена за день
+                                    </label>
+                                    <input type="number" 
+                                           name="price_per_day" 
+                                           class="form-control" 
+                                           value="{{ form.price_per_day.value|default:'' }}"
+                                           step="0.01"
+                                           min="0">
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.price_per_project.id_for_label }}" class="form-label">
+                                        Цена за проект
+                                    </label>
+                                    <input type="number" 
+                                           name="price_per_project" 
+                                           class="form-control" 
+                                           value="{{ form.price_per_project.value|default:'' }}"
+                                           step="0.01"
+                                           min="0">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Блок навыков -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-tools me-2"></i>
+                                Навыки и технологии
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.skills.id_for_label }}" class="form-label">
+                                    Навыки *
+                                </label>
+                                <textarea name="skills" 
+                                          class="form-control" 
+                                          rows="3"
+                                          required>{{ form.skills.value|default:'' }}</textarea>
+                                <div class="form-text">Укажите через запятую: Python, Django, JavaScript</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.technologies.id_for_label }}" class="form-label">
+                                    Технологии
+                                </label>
+                                <textarea name="technologies" 
+                                          class="form-control" 
+                                          rows="2">{{ form.technologies.value|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Блок контактов -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-telephone me-2"></i>
+                                Контактная информация
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.contact_email.id_for_label }}" class="form-label">
+                                        Email для связи
+                                    </label>
+                                    <input type="email" 
+                                           name="contact_email" 
+                                           class="form-control" 
+                                           value="{{ form.contact_email.value|default:'' }}">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.contact_phone.id_for_label }}" class="form-label">
+                                        Телефон
+                                    </label>
+                                    <input type="tel" 
+                                           name="contact_phone" 
+                                           class="form-control" 
+                                           value="{{ form.contact_phone.value|default:'' }}">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.telegram.id_for_label }}" class="form-label">
+                                    Telegram
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">@</span>
+                                    <input type="text" 
+                                           name="telegram" 
+                                           class="form-control" 
+                                           value="{{ form.telegram.value|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Блок дополнительных настроек -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-gear me-2"></i>
+                                Настройки видимости
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               name="is_active" 
+                                               id="id_is_active"
+                                               {% if form.is_active.value %}checked{% endif %}>
+                                        <label class="form-check-label" for="id_is_active">
+                                            Активное объявление
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               name="remote_work" 
+                                               id="id_remote_work"
+                                               {% if form.remote_work.value %}checked{% endif %}>
+                                        <label class="form-check-label" for="id_remote_work">
+                                            Удаленная работа
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Кнопки -->
+                        <div class="d-flex justify-content-between pt-3">
+                            <div>
+                                <a href="{% url 'announcement:detail' announcement.pk %}" 
+                                   class="btn btn-outline-secondary me-2">
+                                    <i class="bi bi-eye me-2"></i>Просмотреть
+                                </a>
+                                <a href="{% url 'announcement:my_announcements' %}" 
+                                   class="btn btn-outline-dark">
+                                    <i class="bi bi-arrow-left me-2"></i>К списку
+                                </a>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-warning btn-lg">
+                                    <i class="bi bi-save me-2"></i>Сохранить изменения
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

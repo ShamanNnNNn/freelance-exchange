@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+<div class="container py-4">
+    <!-- Заголовок и статусы -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">{{ announcement.title }}</h1>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge {% if announcement.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                    {% if announcement.is_active %}Активно{% else %}Неактивно{% endif %}
+                </span>
+                {% if announcement.is_premium %}
+                <span class="badge bg-warning">Премиум</span>
+                {% endif %}
+                <span class="text-muted">
+                    <i class="bi bi-eye me-1"></i>{{ announcement.views }}
+                </span>
+            </div>
+        </div>
+        
+        <!-- Кнопки действий (только для владельца) -->
+        {% if user == announcement.freelancer %}
+        <div class="btn-group">
+            <a href="{% url 'announcement:edit' announcement.pk %}" 
+               class="btn btn-warning btn-sm">
+                <i class="bi bi-pencil"></i> Редактировать
+            </a>
+            <button type="button" class="btn btn-{% if announcement.is_active %}secondary{% else %}success{% endif %} btn-sm"
+                    onclick="toggleStatus()">
+                <i class="bi bi-power"></i>
+                {% if announcement.is_active %}Деактивировать{% else %}Активировать{% endif %}
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" 
+                    data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="bi bi-trash"></i> Удалить
+            </button>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Основной контент -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Описание -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Описание</h5>
+                    <p class="card-text">{{ announcement.description|linebreaks }}</p>
+                </div>
+            </div>
+            
+            <!-- Навыки -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Навыки и технологии</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for skill in announcement.skills_list %}
+                        <span class="badge bg-primary">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Боковая панель -->
+        <div class="col-lg-4">
+            <!-- Информация о фрилансере -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Исполнитель</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{{ announcement.freelancer.profile.avatar.url|default:'/static/default-avatar.png' }}" 
+                             class="rounded-circle me-3" width="50" height="50" alt="Аватар">
+                        <div>
+                            <h6 class="mb-0">{{ announcement.freelancer.get_full_name }}</h6>
+                            <small class="text-muted">@{{ announcement.freelancer.username }}</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Кнопка связи (не показываем владельцу) -->
+                    {% if user != announcement.freelancer %}
+                    <button class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-chat-dots"></i> Написать сообщение
+                    </button>
+                    <button class="btn btn-outline-primary w-100">
+                        <i class="bi bi-telephone"></i> Показать контакты
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Цены -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Стоимость услуг</h5>
+                    {% if announcement.price_per_hour %}
+                    <p class="mb-1">
+                        <i class="bi bi-clock text-primary me-2"></i>
+                        <strong>{{ announcement.price_per_hour }}</strong> {{ announcement.currency }}/час
+                    </p>
+                    {% endif %}
+                    {% if announcement.price_per_day %}
+                    <p class="mb-1">
+                        <i class="bi bi-calendar-day text-primary me-2"></i>
+                        <strong>{{ announcement.price_per_day }}</strong> {{ announcement.currency }}/день
+                    </p>
+                    {% endif %}
+                    {% if announcement.price_per_project %}
+                    <p class="mb-0">
+                        <i class="bi bi-briefcase text-primary me-2"></i>
+                        <strong>{{ announcement.price_per_project }}</strong> {{ announcement.currency }}/проект
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно удаления (только для владельца) -->
+{% if user == announcement.freelancer %}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить объявление?</p>
+                <p class="fw-bold">"{{ announcement.title }}"</p>
+                <p class="text-danger"><small>Это действие нельзя отменить!</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form method="post" action="{% url 'announcement:delete' announcement.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript для переключения статуса -->
+<script>
+function toggleStatus() {
+    fetch("{% url 'announcement:toggle_status' announcement.pk %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+        }
+    }).then(response => {
+        if (response.ok) {
+            location.reload();
+        }
+    });
+}
+</script>
+{% endif %}
+
+{% endblock %}

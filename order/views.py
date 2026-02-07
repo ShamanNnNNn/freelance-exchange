@@ -1,4 +1,3 @@
-from datetime import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -10,9 +9,9 @@ from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.http import HttpResponse
-
-from .models import Order, OrderFile
-from .forms import OrderForm
+from .models import Order, CancellationRequest
+from .models import Order, Application, Notification, OrderFile
+from .forms import OrderForm, ApplicationForm
 
 
 class AllOrdersListView(ListView):
@@ -24,6 +23,29 @@ class AllOrdersListView(ListView):
     
     def get_queryset(self):
         queryset = Order.objects.all().select_related('customer', 'freelancer')
+        
+        # ===== ПОИСК =====
+        search_query = self.request.GET.get('search', '').strip()
+        if search_query:
+            # Разделяем поисковый запрос на слова
+            search_words = search_query.split()
+            
+            # Создаем Q-объект для поиска
+            q_objects = Q()
+            
+            for word in search_words:
+                if word:
+                    # Ищем по всем полям (без учета регистра)
+                    q_objects |= (
+                        Q(title__icontains=word) |
+                        Q(description__icontains=word) |
+                        Q(tags__icontains=word) |
+                        Q(customer__username__icontains=word) |
+                        Q(customer__first_name__icontains=word) |
+                        Q(customer__last_name__icontains=word)
+                    )
+            
+            queryset = queryset.filter(q_objects).distinct()
         
         # Фильтрация по статусу
         status = self.request.GET.get('status')
@@ -61,6 +83,10 @@ class AllOrdersListView(ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        # Получаем поисковый запрос
+        search_query = self.request.GET.get('search', '').strip()
+        context['search_query'] = search_query
         
         # Статистика для всех заказов
         context['all_count'] = Order.objects.count()
@@ -210,10 +236,31 @@ class OrderUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class OrderDetailView(DetailView):
-    """Детальная информация о заказе"""
+    """Детальная информация о заказе с откликами"""
     model = Order
     template_name = 'order/order_detail.html'
     context_object_name = 'order'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Добавляем отклики в контекст
+        context['applications'] = self.object.applications.select_related('freelancer').all()
+        
+        # Проверяем, откликался ли текущий пользователь
+        if self.request.user.is_authenticated and self.request.user != self.object.customer:
+            context['user_application'] = self.object.applications.filter(
+                freelancer=self.request.user
+            ).first()
+        
+        return context
+    
+    def get_object(self, queryset=None):
+        """Получаем объект и увеличиваем счетчик просмотров"""
+        obj = super().get_object(queryset)
+        obj.increment_views()
+        return obj
+
 
 class OrderListView(LoginRequiredMixin, ListView):
     model = Order
@@ -223,7 +270,6 @@ class OrderListView(LoginRequiredMixin, ListView):
     
     def get_queryset(self):
         # ВСЕГДА показываем только заказы текущего пользователя
-        # Даже если он суперпользователь
         queryset = Order.objects.filter(
             Q(customer=self.request.user) |
             Q(freelancer=self.request.user)
@@ -282,81 +328,149 @@ class OrderListView(LoginRequiredMixin, ListView):
         
         return context
 
+
+# ========== ОТДЕЛЬНЫЕ ФУНКЦИИ (НЕ МЕТОДЫ КЛАССА) ==========
+
 @login_required
 def apply_to_order(request, pk):
     """Отклик на заказ"""
-    try:
-        order = get_object_or_404(Order, pk=pk)
-        
-        # Проверяем, что пользователь не заказчик
-        if order.customer == request.user:
-            messages.error(request, 'Вы не можете откликнуться на свой заказ')
-            return redirect('order:detail', pk=pk)
-        
-        # Проверяем, что заказ открыт
-        if order.status != 'open':
-            messages.error(request, 'Нельзя откликнуться на закрытый заказ')
-            return redirect('order:detail', pk=pk)
-        
-        if request.method == 'POST':
-            # Обработка данных формы
-            message = request.POST.get('message', '').strip()
-            proposed_price = request.POST.get('proposed_price')
-            proposed_deadline = request.POST.get('proposed_deadline')
-            portfolio_links = request.POST.get('portfolio_links', '').strip()
+    order = get_object_or_404(Order, pk=pk)
+    
+    # Проверяем, что пользователь не заказчик
+    if order.customer == request.user:
+        messages.error(request, 'Вы не можете откликнуться на свой заказ')
+        return redirect('order:detail', pk=pk)
+    
+    # Проверяем, что заказ открыт
+    if order.status != 'open':
+        messages.error(request, 'Нельзя откликнуться на закрытый заказ')
+        return redirect('order:detail', pk=pk)
+    
+    # Проверяем, не откликался ли уже
+    if Application.objects.filter(order=order, freelancer=request.user).exists():
+        messages.warning(request, 'Вы уже откликались на этот заказ')
+        return redirect('order:detail', pk=pk)
+    
+    if request.method == 'POST':
+        form = ApplicationForm(request.POST)
+        if form.is_valid():
+            application = form.save(commit=False)
+            application.order = order
+            application.freelancer = request.user
+            application.save()
             
-            # Валидация
-            if not message:
-                messages.error(request, 'Пожалуйста, напишите сообщение заказчику')
-                return render(request, 'order/apply_form.html', {
-                    'order': order,
-                    'today': timezone.now().date(),
-                    'form_data': {
-                        'message': message,
-                        'proposed_price': proposed_price,
-                        'proposed_deadline': proposed_deadline,
-                        'portfolio_links': portfolio_links,
-                    }
-                })
+            # Увеличиваем счетчик откликов заказа
+            order.increment_applications()
             
+            # Создаем уведомление для заказчика
+            Notification.objects.create(
+                user=order.customer,
+                title='Новый отклик на ваш заказ!',
+                message=f'{request.user.get_full_name() or request.user.username} откликнулся на ваш заказ "{order.title}".',
+                notification_type='application_received',
+                related_object=f'order:{order.id}',
+                is_important=True
+            )
             
-            messages.success(request, 'Ваш отклик успешно отправлен заказчику!')
+            messages.success(request, 'Ваш отклик успешно отправлен! Заказчик получил уведомление.')
             return redirect('order:detail', pk=pk)
-        
-        # Если GET-запрос, показываем форму
-        context = {
-            'order': order,
-            'today': timezone.now().date()
-        }
-        return render(request, 'order/apply_form.html', context)
-        
-    except Exception as e:
-        # Логирование ошибки (можно добавить позже)
-        # import logging
-        # logger = logging.getLogger(__name__)
-        # logger.error(f"Error in apply_to_order: {str(e)}")
-        
-        messages.error(request, f'Произошла ошибка: {str(e)}')
-        return redirect('order:list')
+    else:
+        form = ApplicationForm(initial={'proposed_price': order.budget})
+    
+    return render(request, 'order/apply_form.html', {
+        'form': form,
+        'order': order
+    })
+
+
+@login_required
+@require_POST
+def accept_application(request, pk, application_pk):  # Измените application_id на application_pk
+    """Принять отклик (только для заказчика)"""
+    order = get_object_or_404(Order, pk=pk)
+    application = get_object_or_404(Application, pk=application_pk, order=order)  # И здесь тоже
+    
+    # Проверяем, что пользователь - заказчик
+    if order.customer != request.user:
+        messages.error(request, 'Вы не можете принять этот отклик')
+        return redirect('order:detail', pk=pk)
+    
+    # Проверяем, что заказ еще открыт
+    if order.status != 'open':
+        messages.error(request, 'Заказ уже не открыт')
+        return redirect('order:detail', pk=pk)
+    
+    if application.accept():
+        messages.success(request, f'Вы приняли отклик от {application.freelancer.username}. Заказ переведен в работу.')
+    else:
+        messages.error(request, 'Не удалось принять отклик')
+    
+    return redirect('order:detail', pk=pk)
+
+
+@login_required
+@require_POST
+def reject_application(request, pk, application_pk):  # Измените application_id на application_pk
+    """Отклонить отклик (только для заказчика)"""
+    order = get_object_or_404(Order, pk=pk)
+    application = get_object_or_404(Application, pk=application_pk, order=order)  # И здесь тоже
+    
+    if order.customer != request.user:
+        messages.error(request, 'Вы не можете отклонить этот отклик')
+        return redirect('order:detail', pk=pk)
+    
+    if application.reject():
+        messages.success(request, 'Отклик отклонен')
+    else:
+        messages.error(request, 'Не удалось отклонить отклик')
+    
+    return redirect('order:detail', pk=pk)
+
+
+@login_required
+@require_POST
+def withdraw_application(request, pk, application_pk):  # Измените application_id на application_pk
+    """Отозвать свой отклик (только для исполнителя)"""
+    order = get_object_or_404(Order, pk=pk)
+    application = get_object_or_404(Application, pk=application_pk, order=order)  # И здесь тоже
+    
+    if application.freelancer != request.user:
+        messages.error(request, 'Вы не можете отозвать этот отклик')
+        return redirect('order:detail', pk=pk)
+    
+    if application.withdraw():
+        messages.success(request, 'Вы отозвали свой отклик')
+    else:
+        messages.error(request, 'Не удалось отозвать отклик')
+    
+    return redirect('order:detail', pk=pk)
+
 
 @login_required
 @require_POST
 def cancel_order(request, pk):
-    """Отмена заказа (только для заказчика)"""
     order = get_object_or_404(Order, pk=pk)
-    
+
+    # Проверка прав
     if order.customer != request.user:
-        messages.error(request, 'Вы не можете отменить этот заказ')
+        messages.error(request, 'У вас нет прав для отмены этого заказа.')
         return redirect('order:detail', pk=pk)
-    
+
     if order.status != 'open':
-        messages.error(request, 'Можно отменить только открытые заказы')
+        messages.error(request, 'Невозможно отменить заказ в текущем статусе.')
         return redirect('order:detail', pk=pk)
-    
-    order.status = 'canceled'
+
+    # Получаем причину отмены
+    reason = request.POST.get('cancel_reason', '')
+
+    # Отменяем заказ
+    order.status = 'cancelled'
     order.save()
-    
-    messages.success(request, 'Заказ успешно отменен')
+
+    # Логируем отмену
+    # Можно создать запись в логе или историю изменений
+
+    messages.success(request, 'Заказ успешно отменен.')
     return redirect('order:detail', pk=pk)
 
 
@@ -379,3 +493,161 @@ def complete_order(request, pk):
     
     messages.success(request, 'Заказ успешно завершен')
     return redirect('order:detail', pk=pk)
+
+
+
+@login_required
+@require_POST
+def request_cancellation(request, pk):
+    """Запрос на отмену заказа в работе"""
+    order = get_object_or_404(Order, pk=pk)
+    
+    # Проверка прав
+    if order.customer != request.user:
+        messages.error(request, 'У вас нет прав для отмены этого заказа.')
+        return redirect('order:detail', pk=pk)
+    
+    if order.status != 'in_progress':
+        messages.error(request, 'Невозможно отменить заказ в текущем статусе.')
+        return redirect('order:detail', pk=pk)
+    
+    # Проверяем, нет ли уже активного запроса
+    if hasattr(order, 'cancellation_request'):
+        if order.cancellation_request.status == 'pending':
+            messages.warning(request, 'Запрос на отмену уже отправлен и ожидает подтверждения.')
+            return redirect('order:detail', pk=pk)
+    
+    # Получаем причину отмены
+    reason = request.POST.get('cancel_reason', '')
+    
+    # Создаем запрос на отмену
+    cancellation_request = CancellationRequest.objects.create(
+        order=order,
+        customer=order.customer,
+        freelancer=order.freelancer,
+        reason=reason,
+        status='pending'
+    )
+    
+    # Меняем статус заказа
+    order.status = 'cancelling'
+    order.save()
+    
+    # Отправляем уведомление исполнителю
+    # Здесь можно добавить отправку email или уведомление в системе
+    
+    messages.success(request, 'Запрос на отмену отправлен исполнителю. Заказ будет отменен после его подтверждения.')
+    return redirect('order:detail', pk=pk)
+
+@login_required
+@require_POST
+def confirm_cancellation(request, pk):
+    """Исполнитель подтверждает отмену"""
+    order = get_object_or_404(Order, pk=pk)
+    
+    # Проверка прав
+    if order.freelancer != request.user:
+        messages.error(request, 'У вас нет прав для этого действия.')
+        return redirect('order:detail', pk=pk)
+    
+    if order.status != 'cancelling':
+        messages.error(request, 'Нет активного запроса на отмену.')
+        return redirect('order:detail', pk=pk)
+    
+    if not hasattr(order, 'cancellation_request'):
+        messages.error(request, 'Запрос на отмену не найден.')
+        return redirect('order:detail', pk=pk)
+    
+    cancellation_request = order.cancellation_request
+    
+    if cancellation_request.status != 'pending':
+        messages.error(request, 'Запрос на отмену уже обработан.')
+        return redirect('order:detail', pk=pk)
+    
+    # Подтверждаем отмену
+    cancellation_request.status = 'confirmed'
+    cancellation_request.responded_at = timezone.now()
+    cancellation_request.save()
+    
+    # Отменяем заказ
+    order.status = 'cancelled'
+    order.save()
+    
+    # Отправляем уведомление заказчику
+    messages.success(request, 'Вы подтвердили отмену заказа.')
+    return redirect('order:detail', pk=pk)
+
+@login_required
+@require_POST
+def reject_cancellation(request, pk):
+    """Исполнитель отклоняет отмену"""
+    order = get_object_or_404(Order, pk=pk)
+    
+    # Проверка прав
+    if order.freelancer != request.user:
+        messages.error(request, 'У вас нет прав для этого действия.')
+        return redirect('order:detail', pk=pk)
+    
+    if order.status != 'cancelling':
+        messages.error(request, 'Нет активного запроса на отмену.')
+        return redirect('order:detail', pk=pk)
+    
+    if not hasattr(order, 'cancellation_request'):
+        messages.error(request, 'Запрос на отмену не найден.')
+        return redirect('order:detail', pk=pk)
+    
+    cancellation_request = order.cancellation_request
+    
+    if cancellation_request.status != 'pending':
+        messages.error(request, 'Запрос на отмену уже обработан.')
+        return redirect('order:detail', pk=pk)
+    
+    # Отклоняем отмену
+    cancellation_request.status = 'rejected'
+    cancellation_request.responded_at = timezone.now()
+    cancellation_request.save()
+    
+    # Возвращаем заказ в работу
+    order.status = 'in_progress'
+    order.save()
+    
+    messages.success(request, 'Вы отклонили запрос на отмену.')
+    return redirect('order:detail', pk=pk)
+
+@login_required
+@require_POST
+def revoke_cancellation(request, pk):
+    """Заказчик отзывает запрос на отмену"""
+    order = get_object_or_404(Order, pk=pk)
+    
+    # Проверка прав
+    if order.customer != request.user:
+        messages.error(request, 'У вас нет прав для этого действия.')
+        return redirect('order:detail', pk=pk)
+    
+    if order.status != 'cancelling':
+        messages.error(request, 'Нет активного запроса на отмену.')
+        return redirect('order:detail', pk=pk)
+    
+    if not hasattr(order, 'cancellation_request'):
+        messages.error(request, 'Запрос на отмену не найден.')
+        return redirect('order:detail', pk=pk)
+    
+    cancellation_request = order.cancellation_request
+    
+    if cancellation_request.status != 'pending':
+        messages.error(request, 'Запрос на отмену уже обработан.')
+        return redirect('order:detail', pk=pk)
+    
+    # Отзываем запрос
+    cancellation_request.status = 'revoked'
+    cancellation_request.responded_at = timezone.now()
+    cancellation_request.save()
+    
+    # Возвращаем заказ в работу
+    order.status = 'in_progress'
+    order.save()
+    
+    messages.success(request, 'Запрос на отмену отозван.')
+    return redirect('order:detail', pk=pk)
+

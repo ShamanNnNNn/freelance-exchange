@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white py-4">
+                    <h3 class="mb-0 text-center">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Удаление объявления
+                    </h3>
+                </div>
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-trash display-1 text-danger"></i>
+                    </div>
+                    
+                    <div class="alert alert-warning text-center mb-4">
+                        <h5 class="alert-heading mb-2">Внимание!</h5>
+                        Это действие нельзя отменить. Все данные будут удалены безвозвратно.
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-2">
+                                <i class="bi bi-file-earmark-text me-2"></i>
+                                {{ announcement.title }}
+                            </h5>
+                            <p class="card-text text-muted mb-1">
+                                <i class="bi bi-calendar me-2"></i>
+                                Создано: {{ announcement.created_at|date:"d.m.Y H:i" }}
+                            </p>
+                            <p class="card-text text-muted mb-0">
+                                <i class="bi bi-eye me-2"></i>
+                                Просмотры: {{ announcement.views }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <form method="post" class="text-center">
+                        {% csrf_token %}
+                        
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="bi bi-trash-fill me-2"></i>
+                                Да, удалить объявление
+                            </button>
+                            
+                            <a href="{% url 'announcement:detail' announcement.pk %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Отмена и вернуться к объявлению
+                            </a>
+                            
+                            <a href="{% url 'announcement:my_announcements' %}" 
+                               class="btn btn-outline-dark">
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Вернуться к моим объявлениям
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Дополнительная информация -->
+            <div class="card mt-4 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Что будет удалено?
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>Текст объявления и описание</li>
+                        <li>Загруженные фотографии</li>
+                        <li>Статистика просмотров</li>
+                        <li>Вся связанная информация</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 12px;
+}
+
+.btn-lg {
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.alert {
+    border-radius: 10px;
+    border-width: 2px;
+}
+</style>
+{% endblock %}

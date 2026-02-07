@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h2 mb-0">
+                <i class="bi bi-people text-primary me-2"></i>
+                Найти исполнителя
+            </h1>
+            <p class="text-muted mb-0">Все активные объявления фрилансеров</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            {% if user.is_authenticated %}
+            <a href="{% url 'announcement:create' %}" class="btn btn-success">
+                <i class="bi bi-plus-circle me-2"></i>Создать объявление
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Поиск и фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" 
+                           name="search" 
+                           class="form-control" 
+                           placeholder="Поиск по навыкам или описанию..."
+                           value="{{ request.GET.search|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="category" class="form-select">
+                        <option value="">Все категории</option>
+                        <option value="web" {% if request.GET.category == 'web' %}selected{% endif %}>Веб-разработка</option>
+                        <option value="mobile" {% if request.GET.category == 'mobile' %}selected{% endif %}>Мобильная разработка</option>
+                        <option value="design" {% if request.GET.category == 'design' %}selected{% endif %}>Дизайн</option>
+                        <option value="marketing" {% if request.GET.category == 'marketing' %}selected{% endif %}>Маркетинг</option>
+                        <option value="content" {% if request.GET.category == 'content' %}selected{% endif %}>Контент</option>
+                        <option value="other" {% if request.GET.category == 'other' %}selected{% endif %}>Другое</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-2"></i>Найти
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Результаты -->
+    {% if announcements %}
+    <div class="row">
+        {% for announcement in announcements %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                {% if announcement.main_photo %}
+                <img src="{{ announcement.main_photo.url }}" 
+                     class="card-img-top" 
+                     alt="{{ announcement.title }}"
+                     style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                     style="height: 200px;">
+                    <i class="bi bi-image text-muted display-4"></i>
+                </div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-secondary">{{ announcement.get_category_display }}</span>
+                        <small class="text-muted">
+                            <i class="bi bi-eye me-1"></i>{{ announcement.views }}
+                        </small>
+                    </div>
+                    
+                    <h5 class="card-title mb-2">
+                        <a href="{% url 'announcement:detail' announcement.pk %}" 
+                           class="text-decoration-none text-dark">
+                            {{ announcement.title|truncatechars:50 }}
+                        </a>
+                    </h5>
+                    
+                    <p class="card-text text-muted small mb-3">
+                        {{ announcement.short_description|truncatechars:100 }}
+                    </p>
+                    
+                    <div class="mb-3">
+                        {% for skill in announcement.skills_list|slice:":3" %}
+                        <span class="badge bg-light text-dark border me-1 mb-1">{{ skill }}</span>
+                        {% endfor %}
+                        {% if announcement.skills_list|length > 3 %}
+                        <span class="badge bg-light text-dark border">+{{ announcement.skills_list|length|add:"-3" }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if announcement.price_per_hour %}
+                            <span class="fw-bold text-primary">
+                                {{ announcement.price_per_hour }} {{ announcement.currency }}/час
+                            </span>
+                            {% elif announcement.price_per_project %}
+                            <span class="fw-bold text-primary">
+                                {{ announcement.price_per_project }} {{ announcement.currency }}/проект
+                            </span>
+                            {% else %}
+                            <span class="text-muted">По договоренности</span>
+                            {% endif %}
+                        </div>
+                        
+                        <a href="{% url 'announcement:detail' announcement.pk %}" 
+                           class="btn btn-outline-primary btn-sm">
+                            Подробнее
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-transparent border-top">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-person-circle me-1"></i>
+                            {{ announcement.freelancer.get_full_name|default:announcement.freelancer.username }}
+                        </small>
+                        <small class="text-muted">
+                            {{ announcement.created_at|date:"d.m.Y" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Если нет результатов -->
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-search display-1 text-muted mb-4"></i>
+        <h3 class="text-muted mb-3">Объявления не найдены</h3>
+        <p class="text-muted mb-4">Попробуйте изменить параметры поиска</p>
+        <a href="{% url 'announcement:all_announcements' %}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-clockwise me-2"></i>Сбросить фильтры
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.card {
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.badge {
+    border-radius: 6px;
+    padding: 0.4em 0.8em;
+    font-weight: 500;
+}
+
+.card-img-top {
+    border-radius: 12px 12px 0 0;
+}
+</style>
+{% endblock %}
