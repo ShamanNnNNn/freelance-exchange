@@ -40,10 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
         
     'main',
-    'goods',
+    #'goods',
     'users',
     'order',
-    'announcement',
+    #'announcement',
 ]
 
 MIDDLEWARE = [

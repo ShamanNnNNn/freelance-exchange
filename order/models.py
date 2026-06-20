@@ -37,12 +37,13 @@ class Order(models.Model):
     title = models.CharField('Название', max_length=200)
     description = models.TextField('Описание')
     status = models.CharField('Статус', max_length=20, choices=STATUS_CHOICES, default='open')
-    category = models.CharField('Категория', max_length=50, choices=CATEGORY_CHOICES)
+    category = models.ForeignKey('Category', on_delete=models.PROTECT, null=True, blank=True, verbose_name='Категория')
     budget = models.DecimalField('Бюджет', max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     currency = models.CharField('Валюта', max_length=3, choices=[('RUB', '₽'), ('USD', '$'), ('EUR', '€')], default='RUB')
     deadline = models.DateField('Срок выполнения')
     tags = models.TextField('Теги', blank=True, help_text='Через запятую')
-    
+    languages = models.ManyToManyField('Language', blank=True, verbose_name='Языки программирования')
+    technologies = models.ManyToManyField('Technology', blank=True, verbose_name='Технологии')
     # Пользователи
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, 
                                 related_name='orders_as_customer', verbose_name='Заказчик')
@@ -87,7 +88,19 @@ class Order(models.Model):
                 return True
                 
             return False
-    
+
+class Language(models.Model):
+    name = models.CharField('Название', max_length=100)
+    slug = models.SlugField('Slug', unique=True)
+    categories = models.ManyToManyField('Category', blank=True, verbose_name='Категории')
+
+    class Meta:
+        verbose_name = 'Язык программирования'
+        verbose_name_plural = 'Языки программирования'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
         
 class Application(models.Model):
     """Отклик на заказ"""
@@ -306,4 +319,31 @@ class CancellationRequest(models.Model):
     def __str__(self):
         return f"Запрос на отмену заказа #{self.order.id}"
     
+class Category(models.Model):
+    name = models.CharField('Название', max_length=100)
+    slug = models.SlugField('Slug', unique=True)  # web, mobile, design...
+    
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+    
 
+class Technology(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL,
+                                  null=True, blank=True)
+    language = models.ForeignKey('Language', on_delete=models.SET_NULL,
+                                  null=True, blank=True, verbose_name='Язык')
+
+    class Meta:
+        verbose_name = 'Технология'
+        verbose_name_plural = 'Технологии'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name

@@ -31,7 +31,7 @@
                                 <input type="text" 
                                        name="title" 
                                        class="form-control {% if form.title.errors %}is-invalid{% endif %}" 
-                                       value="{{ form.title.value|default:'' }}"
+                                       value="{{ form.title.value|default:announcement.title|default:'' }}"
                                        required>
                                 {% if form.title.errors %}
                                 <div class="invalid-feedback">{{ form.title.errors }}</div>
@@ -43,14 +43,29 @@
                                     <label for="{{ form.category.id_for_label }}" class="form-label fw-bold">
                                         Категория *
                                     </label>
-                                    {{ form.category }}
+                                    <select name="category" class="form-select" required>
+                                        <option value="">Выберите категорию</option>
+                                        {% for value, label in form.fields.category.choices %}
+                                            <option value="{{ value }}" 
+                                                    {% if form.category.value|default:announcement.category|default:'' == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                                 
                                 <div class="col-md-6 mb-3">
                                     <label for="{{ form.currency.id_for_label }}" class="form-label fw-bold">
                                         Валюта
                                     </label>
-                                    {{ form.currency }}
+                                    <select name="currency" class="form-select">
+                                        {% for value, label in form.fields.currency.choices %}
+                                            <option value="{{ value }}" 
+                                                    {% if form.currency.value|default:announcement.currency|default:'RUB' == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -63,23 +78,40 @@
                             </h5>
                             
                             <div class="mb-3">
-                                <label for="{{ form.short_description.id_for_label }}" class="form-label">
-                                    Краткое описание *
-                                </label>
-                                <textarea name="short_description" 
-                                          class="form-control" 
-                                          rows="3"
-                                          required>{{ form.short_description.value|default:'' }}</textarea>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="{{ form.description.id_for_label }}" class="form-label">
-                                    Полное описание *
+                                <label for="description" class="form-label">
+                                    Описание *
                                 </label>
                                 <textarea name="description" 
                                           class="form-control" 
                                           rows="6"
-                                          required>{{ form.description.value|default:'' }}</textarea>
+                                          required>{{ form.description.value|default:announcement.description|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Блок опыта и доступности -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-briefcase me-2"></i>
+                                Опыт и доступность
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="experience" class="form-label">
+                                    Опыт работы
+                                </label>
+                                <textarea name="experience" 
+                                          class="form-control" 
+                                          rows="3">{{ form.experience.value|default:announcement.experience|default:'' }}</textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="availability" class="form-label">
+                                    Доступность
+                                </label>
+                                <input type="text" 
+                                       name="availability" 
+                                       class="form-control" 
+                                       value="{{ form.availability.value|default:announcement.availability|default:'Готов к работе' }}">
                             </div>
                         </div>
                         
@@ -91,38 +123,14 @@
                             </h5>
                             
                             <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="{{ form.price_per_hour.id_for_label }}" class="form-label">
-                                        Цена за час
-                                    </label>
-                                    <input type="number" 
-                                           name="price_per_hour" 
-                                           class="form-control" 
-                                           value="{{ form.price_per_hour.value|default:'' }}"
-                                           step="0.01"
-                                           min="0">
-                                </div>
-                                
-                                <div class="col-md-4 mb-3">
-                                    <label for="{{ form.price_per_day.id_for_label }}" class="form-label">
-                                        Цена за день
-                                    </label>
-                                    <input type="number" 
-                                           name="price_per_day" 
-                                           class="form-control" 
-                                           value="{{ form.price_per_day.value|default:'' }}"
-                                           step="0.01"
-                                           min="0">
-                                </div>
-                                
-                                <div class="col-md-4 mb-3">
-                                    <label for="{{ form.price_per_project.id_for_label }}" class="form-label">
+                                <div class="col-md-6 mb-3">
+                                    <label for="price_per_project" class="form-label">
                                         Цена за проект
                                     </label>
                                     <input type="number" 
                                            name="price_per_project" 
                                            class="form-control" 
-                                           value="{{ form.price_per_project.value|default:'' }}"
+                                           value="{{ form.price_per_project.value|default:announcement.price_per_project|default:'' }}"
                                            step="0.01"
                                            min="0">
                                 </div>
@@ -137,25 +145,27 @@
                             </h5>
                             
                             <div class="mb-3">
-                                <label for="{{ form.skills.id_for_label }}" class="form-label">
+                                <label for="skills" class="form-label">
                                     Навыки *
                                 </label>
                                 <textarea name="skills" 
                                           class="form-control" 
                                           rows="3"
-                                          required>{{ form.skills.value|default:'' }}</textarea>
+                                          required>{{ form.skills.value|default:announcement.skills|default:'' }}</textarea>
                                 <div class="form-text">Укажите через запятую: Python, Django, JavaScript</div>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="{{ form.technologies.id_for_label }}" class="form-label">
+                                <label for="technologies" class="form-label">
                                     Технологии
                                 </label>
                                 <textarea name="technologies" 
                                           class="form-control" 
-                                          rows="2">{{ form.technologies.value|default:'' }}</textarea>
+                                          rows="2">{{ form.technologies.value|default:announcement.technologies|default:'' }}</textarea>
                             </div>
                         </div>
+                        
+                        
                         
                         <!-- Блок контактов -->
                         <div class="mb-4">
@@ -166,28 +176,28 @@
                             
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="{{ form.contact_email.id_for_label }}" class="form-label">
+                                    <label for="contact_email" class="form-label">
                                         Email для связи
                                     </label>
                                     <input type="email" 
                                            name="contact_email" 
                                            class="form-control" 
-                                           value="{{ form.contact_email.value|default:'' }}">
+                                           value="{{ form.contact_email.value|default:announcement.contact_email|default:'' }}">
                                 </div>
                                 
                                 <div class="col-md-6 mb-3">
-                                    <label for="{{ form.contact_phone.id_for_label }}" class="form-label">
+                                    <label for="contact_phone" class="form-label">
                                         Телефон
                                     </label>
                                     <input type="tel" 
                                            name="contact_phone" 
                                            class="form-control" 
-                                           value="{{ form.contact_phone.value|default:'' }}">
+                                           value="{{ form.contact_phone.value|default:announcement.contact_phone|default:'' }}">
                                 </div>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="{{ form.telegram.id_for_label }}" class="form-label">
+                                <label for="telegram" class="form-label">
                                     Telegram
                                 </label>
                                 <div class="input-group">
@@ -195,7 +205,37 @@
                                     <input type="text" 
                                            name="telegram" 
                                            class="form-control" 
-                                           value="{{ form.telegram.value|default:'' }}">
+                                           value="{{ form.telegram.value|default:announcement.telegram|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Блок локации -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-geo-alt me-2"></i>
+                                Локация
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="country" class="form-label">
+                                        Страна
+                                    </label>
+                                    <input type="text" 
+                                           name="country" 
+                                           class="form-control" 
+                                           value="{{ form.country.value|default:announcement.country|default:'' }}">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="city" class="form-label">
+                                        Город
+                                    </label>
+                                    <input type="text" 
+                                           name="city" 
+                                           class="form-control" 
+                                           value="{{ form.city.value|default:announcement.city|default:'' }}">
                                 </div>
                             </div>
                         </div>
@@ -214,7 +254,7 @@
                                                type="checkbox" 
                                                name="is_active" 
                                                id="id_is_active"
-                                               {% if form.is_active.value %}checked{% endif %}>
+                                               {% if form.is_active.value|default:announcement.is_active|default:True %}checked{% endif %}>
                                         <label class="form-check-label" for="id_is_active">
                                             Активное объявление
                                         </label>
@@ -225,11 +265,11 @@
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" 
                                                type="checkbox" 
-                                               name="remote_work" 
-                                               id="id_remote_work"
-                                               {% if form.remote_work.value %}checked{% endif %}>
-                                        <label class="form-check-label" for="id_remote_work">
-                                            Удаленная работа
+                                               name="is_premium" 
+                                               id="id_is_premium"
+                                               {% if form.is_premium.value|default:announcement.is_premium|default:False %}checked{% endif %}>
+                                        <label class="form-check-label" for="id_is_premium">
+                                            Премиум объявление
                                         </label>
                                     </div>
                                 </div>
@@ -260,4 +300,19 @@
         </div>
     </div>
 </div>
+
+<!-- Добавьте стили для лучшего отображения -->
+<style>
+    .form-label.required:after {
+        content: " *";
+        color: #dc3545;
+    }
+    .card {
+        border-radius: 15px;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+    }
+</style>
 {% endblock %}

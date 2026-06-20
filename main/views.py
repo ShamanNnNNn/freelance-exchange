@@ -1,19 +1,14 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-
-from goods.models import Categories
+from order.models import Order
 
 def index(request) -> HttpResponse:
-    
-    categories = Categories.objects.all()
-    
-    context: dict[str, str] = {
-        'title': 'Home',
-        'content': 'Магазин мебели HOME',
-        'categories': categories
+    open_orders = Order.objects.filter(status='open').select_related('customer')[:6]
+    context = {
+        'title': 'Фриланс-биржа',
+        'open_orders': open_orders,
     }
-    return render(request, 'main/index.html', context)
-
+    return render(request, 'main/index.html', context) 
 def about(request) -> HttpResponse:
     context: dict[str, str] = {
         'title': 'О нас',

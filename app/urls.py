@@ -35,7 +35,7 @@ urlpatterns = [
     #path('catalog/', include('goods.urls', namespace='catalog')),
     path('user/', include('users.urls', namespace='user')),
     path('order/', include('order.urls', namespace='order')),
-    path('announcement/', include('announcement.urls', namespace='announcement')),
+    #path('announcement/', include('announcement.urls', namespace='announcement')),
     
 ]
 

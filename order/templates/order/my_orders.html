@@ -1,104 +1,89 @@
 {% extends "base.html" %}
 {% load static %}
-{% load goods_tags %}
+{% load order_tags %}
 
 {% block content %}
 <div class="container py-4">
     <h1 class="mb-4">Мои заказы</h1>
+    <div class="mb-4">
+    <h5 class="text-muted">Всего: <strong>{{ my_all_count|default:0 }}</strong></h5>
+</div>
     
-    <!-- Статистика моих заказов -->
-    <div class="row mb-4">
-        <div class="col-md-3 col-6 mb-3">
-            <div class="card text-center border-primary">
-                <div class="card-body">
-                    <div class="display-6 text-primary">{{ my_all_count|default:0 }}</div>
-                    <div class="text-muted">Всего</div>
+    <!-- Фильтры -->
+    <div class="dropdown mb-3">
+        <button class="btn btn-secondary dropdown-toggle btn-dark" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
+            Фильтры
+        </button>
+
+        <form action="{% url 'order:my_orders' %}" method="get" class="dropdown-menu bg-dark" data-bs-theme="dark">
+            <div class="p-3">
+                <p class="text-white">Роль:</p>
+                <div class="form-check text-white mb-2">
+                    <input class="form-check-input" type="radio" name="role" id="role_all" value=""
+                        {% if not request.GET.role %}checked{% endif %}>
+                    <label class="form-check-label" for="role_all">Все роли</label>
                 </div>
+                <div class="form-check text-white mb-2">
+                    <input class="form-check-input" type="radio" name="role" id="role_customer" value="customer"
+                        {% if request.GET.role == 'customer' %}checked{% endif %}>
+                    <label class="form-check-label" for="role_customer">Я заказчик</label>
+                </div>
+                <div class="form-check text-white mb-3">
+                    <input class="form-check-input" type="radio" name="role" id="role_freelancer" value="freelancer"
+                        {% if request.GET.role == 'freelancer' %}checked{% endif %}>
+                    <label class="form-check-label" for="role_freelancer">Я исполнитель</label>
+                </div>
+
+                <p class="text-white">Статус:</p>
+                <div class="form-check text-white mb-2">
+                    <input class="form-check-input" type="radio" name="status" id="status_all" value=""
+                        {% if not request.GET.status %}checked{% endif %}>
+                    <label class="form-check-label" for="status_all">Все статусы</label>
+                </div>
+                <div class="form-check text-white mb-2">
+                    <input class="form-check-input" type="radio" name="status" id="status_open" value="open"
+                        {% if request.GET.status == 'open' %}checked{% endif %}>
+                    <label class="form-check-label" for="status_open">Открытые</label>
+                </div>
+                <div class="form-check text-white mb-2">
+                    <input class="form-check-input" type="radio" name="status" id="status_in_progress" value="in_progress"
+                        {% if request.GET.status == 'in_progress' %}checked{% endif %}>
+                    <label class="form-check-label" for="status_in_progress">В работе</label>
+                </div>
+                <div class="form-check text-white mb-3">
+                    <input class="form-check-input" type="radio" name="status" id="status_completed" value="completed"
+                        {% if request.GET.status == 'completed' %}checked{% endif %}>
+                    <label class="form-check-label" for="status_completed">Завершенные</label>
+                </div>
+
+                <select name="category" class="form-select mb-3">
+                    <option value="">Все категории</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}"
+                            {% if request.GET.category == cat.id|stringformat:"i" %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <p class="text-white">Технологии:</p>
+                {% for tech in technologies %}
+                <div class="form-check text-white mb-1">
+                    <input class="form-check-input tech-checkbox" type="checkbox"
+                        name="tech" value="{{ tech.slug }}"
+                        id="tech_{{ tech.slug }}"
+                        data-category="{{ tech.category.id }}"
+                        {% if tech.slug in selected_tech %}checked{% endif %}>
+                    <label class="form-check-label" for="tech_{{ tech.slug }}">
+                        {{ tech.name }}
+                    </label>
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-primary w-100 mt-3">Применить фильтры</button>
             </div>
-        </div>
-        <div class="col-md-3 col-6 mb-3">
-            <div class="card text-center border-primary">
-                <div class="card-body">
-                    <div class="display-6 text-primary">{{ my_open_count|default:0 }}</div>
-                    <div class="text-muted">Открытые</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-6 mb-3">
-            <div class="card text-center border-warning">
-                <div class="card-body">
-                    <div class="display-6 text-warning">{{ my_in_progress_count|default:0 }}</div>
-                    <div class="text-muted">В работе</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-6 mb-3">
-            <div class="card text-center border-success">
-                <div class="card-body">
-                    <div class="display-6 text-success">{{ my_completed_count|default:0 }}</div>
-                    <div class="text-muted">Завершенные</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Простые фильтры -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Роль</label>
-                    <select class="form-select" onchange="location = this.value;">
-                        <option value="?">Все роли</option>
-                        <option value="?role=customer" {% if request.GET.role == 'customer' %}selected{% endif %}>
-                            Я заказчик
-                        </option>
-                        <option value="?role=freelancer" {% if request.GET.role == 'freelancer' %}selected{% endif %}>
-                            Я исполнитель
-                        </option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Статус</label>
-                    <select class="form-select" onchange="location = this.value;">
-                        <option value="?">Все статусы</option>
-                        <option value="?status=open" {% if request.GET.status == 'open' %}selected{% endif %}>
-                            Открытые
-                        </option>
-                        <option value="?status=in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>
-                            В работе
-                        </option>
-                        <option value="?status=completed" {% if request.GET.status == 'completed' %}selected{% endif %}>
-                            Завершенные
-                        </option>
-                        <option value="?status=canceled" {% if request.GET.status == 'canceled' %}selected{% endif %}>
-                            Отмененные
-                        </option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Категория</label>
-                    <select class="form-select" onchange="location = this.value;">
-                        <option value="?">Все категории</option>
-                        <option value="?category=web" {% if request.GET.category == 'web' %}selected{% endif %}>
-                            Веб-разработка
-                        </option>
-                        <option value="?category=mobile" {% if request.GET.category == 'mobile' %}selected{% endif %}>
-                            Мобильная разработка
-                        </option>
-                        <option value="?category=design" {% if request.GET.category == 'design' %}selected{% endif %}>
-                            Дизайн
-                        </option>
-                        <option value="?category=marketing" {% if request.GET.category == 'marketing' %}selected{% endif %}>
-                            Маркетинг
-                        </option>
-                        <option value="?category=writing" {% if request.GET.category == 'writing' %}selected{% endif %}>
-                            Копирайтинг
-                        </option>
-                    </select>
-                </div>
-            </div>
-        </div>
+        </form>
     </div>
     
     <!-- Ссылка на все заказы -->
@@ -280,4 +265,19 @@
         <p class="m-0 text-center text-white">Copyright &copy; Home Python Hub Studio 2023</p>
     </div>
 </footer>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.querySelector('[name="category"]');
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            const selectedCategory = this.value;
+            document.querySelectorAll('.tech-checkbox').forEach(cb => {
+                const techCategory = cb.dataset.category;
+                cb.closest('.form-check').style.display =
+                    (!selectedCategory || techCategory == selectedCategory) ? '' : 'none';
+            });
+        });
+    }
+});
+</script>
 {% endblock %}

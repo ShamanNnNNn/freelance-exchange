@@ -3,8 +3,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import auth, messages
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-
-from goods.models import Categories
+from django.db.models import Q
+from order.models import Order
 from users.forms import ProfileForm, UserLoginForm, UserRegistrationForm
 
 def login(request):
@@ -54,14 +54,25 @@ def profile(request):
     else:
         form = ProfileForm(instance=request.user)
         
+    user_orders = Order.objects.filter(Q(customer=request.user) | Q(freelancer=request.user))
+    #user_announcements = Announcement.objects.filter(freelancer=request.user)
+    completed_orders = user_orders.filter(status='completed').count()
+    in_progress_orders = user_orders.filter(status='in_progress').count()
     context = {
-        'title': "Профиль",
-        'form': form
-    }
+    'title': "Профиль",
+    'form': form,
+    'user_orders': user_orders,
+    #'user_announcements': user_announcements,
+    'completed_orders': completed_orders,
+    'in_progress_orders': in_progress_orders,
+    }   
+    
     return render(request, 'users/profile.html', context)
 
 #def users_cart(request):
     #return render(request, "users/users_cart.html")
+    
+    
 
 @login_required
 def logout(request):

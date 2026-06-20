@@ -1,21 +1,57 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block css %}
-    <link rel="stylesheet" href="{% static "deps/css/my_footer_css.css" %}">
-{% endblock %}
-
-
 {% block content %}
-    <h1 class="mt-5 pt-5"><strong>{{ content }}</strong></h1>
-{% endblock %}
-
-
-{% block footer %}
-<footer class="py-4 bg-dark">
-    <div class="container">
-        <p class="m-0 text-center text-white">Copyright &copy; Home Python Hub Studio 2023</p>
+<div class="text-center py-5">
+    <h1 class="display-5 fw-bold">Биржа IT-задач</h1>
+    <p class="lead text-muted">
+        Заказчики размещают технические задачи, исполнители откликаются и берут их в работу.
+        Без посредников и лишних шагов.
+    </p>
+    <div class="mt-4">
+        <a href="{% url 'order:all_orders' %}" class="btn btn-primary btn-lg me-2">
+            <i class="bi bi-search"></i> Смотреть заказы
+        </a>
+        {% if not user.is_authenticated %}
+        <a href="{% url 'user:registration' %}" class="btn btn-outline-primary btn-lg">
+            Зарегистрироваться
+        </a>
+        {% else %}
+        <a href="{% url 'order:create' %}" class="btn btn-outline-primary btn-lg">
+            Создать заказ
+        </a>
+        {% endif %}
     </div>
-</footer>
-{% endblock %}
+</div>
 
+{% if open_orders %}
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <h4 class="mb-0">Последние открытые заказы</h4>
+    <a href="{% url 'order:all_orders' %}" class="btn btn-sm btn-outline-secondary">Все заказы</a>
+</div>
+
+<div class="row">
+    {% for order in open_orders %}
+    <div class="col-lg-4 col-md-6 p-2">
+        <div class="card border-primary rounded h-100">
+            <div class="card-body">
+                <a href="{% url 'order:detail' order.pk %}" class="text-decoration-none">
+                    <h5 class="card-title text-dark">{{ order.title|truncatechars:40 }}</h5>
+                </a>
+                <p class="card-text text-muted">{{ order.description|truncatechars:80 }}</p>
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">{{ order.get_category_display }}</small>
+                    <strong>{{ order.budget }} {{ order.get_currency_display }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center text-muted py-4">
+    Пока нет открытых заказов. Будьте первым, кто разместит задачу!
+</div>
+{% endif %}
+
+{% endblock %}

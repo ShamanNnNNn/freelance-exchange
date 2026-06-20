@@ -1,18 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
-{% load goods_tags %}
+{% load order_tags %}
 
 {% block content %}
 <div class="container py-4">
-    
-    <!-- ДЕБАГ ИНФОРМАЦИЯ -->
-    <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
-        <small class="text-muted">
-            🔍 Поисковый запрос: <strong>{{ search_query|default:"НЕТ" }}</strong> |
-            🎯 Найдено: <strong>{{ orders.paginator.count }}</strong> заказов |
-            📄 Страница: <strong>{{ orders.number }}</strong> из {{ orders.paginator.num_pages }}
-        </small>
-    </div>
     
     <!-- Если есть поиск но нет результатов -->
     {% if search_query and orders.paginator.count == 0 %}
@@ -41,149 +32,82 @@
     {% endif %}
 
     <!-- Фильтры для заказов -->
-    <div class="dropdown mb-3">
-        <button class="btn btn-secondary dropdown-toggle btn-dark" type="button" data-bs-toggle="dropdown"
-            aria-expanded="false">
-            Фильтры
-        </button>
-    
-        <form action="{% url 'order:all_orders' %}" method="get" class="dropdown-menu bg-dark" data-bs-theme="dark">
-            <div class="p-3">
-                <!-- Фильтр по участию -->
-                <p class="text-white">Тип заказов:</p>
-                <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="participation" id="participation_all" value="" 
-                           {% if not request.GET.participation %}checked{% endif %}>
-                    <label class="form-check-label" for="participation_all">
-                        Все заказы на бирже
-                    </label>
+    <div class="mb-3">
+    <button class="btn btn-secondary btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#filtersPanel">
+        <i class="bi bi-funnel"></i> Фильтры
+    </button>
+
+    <div class="collapse mt-2" id="filtersPanel">
+        <form action="{% url 'order:all_orders' %}" method="get" class="bg-dark rounded p-4" data-bs-theme="dark">
+            <div class="row">                
+
+                <!-- Категория и сортировка -->
+                <div class="col-md-3 mb-3">
+                    <p class="text-white fw-bold">Категория</p>
+                    <select name="category" class="form-select mb-3">
+                        <option value="">Все категории</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}" 
+                                {% if request.GET.category == cat.id|stringformat:"i" %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <p class="text-white fw-bold">Сортировка</p>
+                    <select name="order_by" class="form-select">
+                        <option value="default" {% if not request.GET.order_by or request.GET.order_by == 'default' %}selected{% endif %}>По умолчанию</option>
+                        <option value="budget" {% if request.GET.order_by == 'budget' %}selected{% endif %}>Бюджет ↑</option>
+                        <option value="-budget" {% if request.GET.order_by == '-budget' %}selected{% endif %}>Бюджет ↓</option>
+                        <option value="deadline" {% if request.GET.order_by == 'deadline' %}selected{% endif %}>Срок ↑</option>
+                        <option value="-deadline" {% if request.GET.order_by == '-deadline' %}selected{% endif %}>Срок ↓</option>
+                    </select>
                 </div>
-                {% if user.is_authenticated %}
-                <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="participation" id="participation_my_orders" value="my_orders" 
-                           {% if request.GET.participation == 'my_orders' %}checked{% endif %}>
-                    <label class="form-check-label" for="participation_my_orders">
-                        Только мои заказы
-                    </label>
+
+        <p class="text-white fw-bold">Технологии</p>
+        <input type="text" class="form-control form-control-sm mb-2" id="techSearch" 
+            placeholder="Поиск технологии...">
+
+        <div class="accordion" id="techAccordion">
+            {% for lang in languages %}
+            <div class="accordion-item bg-dark border-secondary lang-group" data-category="{{ lang.categories.all|join:',' }}">
+                <h2 class="accordion-header">
+                    <button class="accordion-button bg-dark text-white collapsed" type="button" 
+                            data-bs-toggle="collapse" data-bs-target="#lang_{{ lang.slug }}">
+                        {{ lang.name }}
+                    </button>
+                </h2>
+                <div id="lang_{{ lang.slug }}" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        {% for tech in lang.technology_set.all %}
+                        <div class="form-check text-white mb-1 tech-row" data-name="{{ tech.name|lower }}">
+                            <input class="form-check-input" type="checkbox" 
+                                name="tech" value="{{ tech.slug }}"
+                                id="tech_{{ tech.slug }}"
+                                {% if tech.slug in selected_tech %}checked{% endif %}>
+                            <label class="form-check-label" for="tech_{{ tech.slug }}">{{ tech.name }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
-                <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="participation" id="participation_customer" value="customer" 
-                           {% if request.GET.participation == 'customer' %}checked{% endif %}>
-                    <label class="form-check-label" for="participation_customer">
-                        Где я заказчик
-                    </label>
-                </div>
-                <div class="form-check text-white mb-3">
-                    <input class="form-check-input" type="radio" name="participation" id="participation_freelancer" value="freelancer" 
-                           {% if request.GET.participation == 'freelancer' %}checked{% endif %}>
-                    <label class="form-check-label" for="participation_freelancer">
-                        Где я исполнитель
-                    </label>
-                </div>
-                {% endif %}
-                
-                <!-- Фильтр по статусу -->
-                <p class="text-white">Статус:</p>
-                <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="status" id="status_all" value="" 
-                           {% if not request.GET.status %}checked{% endif %}>
-                    <label class="form-check-label" for="status_all">
-                        Все статусы
-                    </label>
-                </div>
-                <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="status" id="status_open" value="open" 
-                           {% if request.GET.status == 'open' %}checked{% endif %}>
-                    <label class="form-check-label" for="status_open">
-                        Открытые
-                    </label>
-                </div>
-                <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="status" id="status_in_progress" value="in_progress" 
-                           {% if request.GET.status == 'in_progress' %}checked{% endif %}>
-                    <label class="form-check-label" for="status_in_progress">
-                        В работе
-                    </label>
-                </div>
-                <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="status" id="status_completed" value="completed" 
-                           {% if request.GET.status == 'completed' %}checked{% endif %}>
-                    <label class="form-check-label" for="status_completed">
-                        Завершенные
-                    </label>
-                </div>
-                <div class="form-check text-white mb-3">
-                    <input class="form-check-input" type="radio" name="status" id="status_canceled" value="canceled" 
-                           {% if request.GET.status == 'canceled' %}checked{% endif %}>
-                    <label class="form-check-label" for="status_canceled">
-                        Отмененные
-                    </label>
-                </div>
-                
-                <!-- Фильтр по категории -->
-                <p class="text-white">Категория:</p>
-                <select name="category" class="form-select mb-3">
-                    <option value="">Все категории</option>
-                    <option value="web" {% if request.GET.category == 'web' %}selected{% endif %}>Веб-разработка</option>
-                    <option value="mobile" {% if request.GET.category == 'mobile' %}selected{% endif %}>Мобильная разработка</option>
-                    <option value="design" {% if request.GET.category == 'design' %}selected{% endif %}>Дизайн</option>
-                    <option value="marketing" {% if request.GET.category == 'marketing' %}selected{% endif %}>Маркетинг</option>
-                    <option value="writing" {% if request.GET.category == 'writing' %}selected{% endif %}>Копирайтинг</option>
-                    <option value="translation" {% if request.GET.category == 'translation' %}selected{% endif %}>Переводы</option>
-                    <option value="other" {% if request.GET.category == 'other' %}selected{% endif %}>Другое</option>
-                </select>
-                
-                <!-- Сортировка -->
-                <p class="text-white">Сортировать:</p>
-                <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="order_by" id="order_default" value="default" 
-                           {% if not request.GET.order_by or request.GET.order_by == 'default' %}checked{% endif %}>
-                    <label class="form-check-label" for="order_default">
-                        По умолчанию
-                    </label>
-                </div>
-                <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="order_by" id="order_price_asc" value="budget" 
-                           {% if request.GET.order_by == 'budget' %}checked{% endif %}>
-                    <label class="form-check-label" for="order_price_asc">
-                        По бюджету (возрастание)
-                    </label>
-                </div>
-                <div class="form-check text-white mb-3">
-                    <input class="form-check-input" type="radio" name="order_by" id="order_price_desc" value="-budget" 
-                           {% if request.GET.order_by == '-budget' %}checked{% endif %}>
-                    <label class="form-check-label" for="order_price_desc">
-                        По бюджету (убывание)
-                    </label>
-                </div>
-                <div class="form-check text-white mb-2">
-                    <input class="form-check-input" type="radio" name="order_by" id="order_date_asc" value="deadline" 
-                           {% if request.GET.order_by == 'deadline' %}checked{% endif %}>
-                    <label class="form-check-label" for="order_date_asc">
-                        По сроку (ближайшие)
-                    </label>
-                </div>
-                <div class="form-check text-white mb-3">
-                    <input class="form-check-input" type="radio" name="order_by" id="order_date_desc" value="-deadline" 
-                           {% if request.GET.order_by == '-deadline' %}checked{% endif %}>
-                    <label class="form-check-label" for="order_date_desc">
-                        По сроку (поздние)
-                    </label>
-                </div>
-                
-                <button type="submit" class="btn btn-primary w-100">Применить фильтры</button>
+            </div>
+            {% endfor %}
+        </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top border-secondary">
+                <a href="{% url 'order:all_orders' %}" class="btn btn-outline-secondary">Сбросить</a>
+                <button type="submit" class="btn btn-primary">Применить фильтры</button>
             </div>
         </form>
     </div>
+
     
     <!-- Кнопка создания нового заказа -->
     {% if user.is_authenticated %}
     <div class="mb-4">
         <a href="{% url 'order:create' %}" class="btn btn-primary btn-lg">
             <i class="bi bi-plus-circle"></i> Создать новый заказ
-        </a>
-        <a href="{% url 'order:my_orders' %}" class="btn btn-outline-primary btn-lg ms-2">
-            <i class="bi bi-person-circle"></i> Мои заказы
         </a>
     </div>
     {% else %}
@@ -201,41 +125,10 @@
     </div>
     {% endif %}
     
-    <!-- Статистика -->
-    <div class="row mb-4">
-        <div class="col-md-3 col-6 mb-3">
-            <div class="card text-center border-primary">
-                <div class="card-body">
-                    <div class="display-6 text-primary">{{ all_count|default:0 }}</div>
-                    <div class="text-muted">Всего заказов</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-6 mb-3">
-            <div class="card text-center border-primary">
-                <div class="card-body">
-                    <div class="display-6 text-primary">{{ open_count|default:0 }}</div>
-                    <div class="text-muted">Открытые</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-6 mb-3">
-            <div class="card text-center border-warning">
-                <div class="card-body">
-                    <div class="display-6 text-warning">{{ in_progress_count|default:0 }}</div>
-                    <div class="text-muted">В работе</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-6 mb-3">
-            <div class="card text-center border-success">
-                <div class="card-body">
-                    <div class="display-6 text-success">{{ completed_count|default:0 }}</div>
-                    <div class="text-muted">Завершенные</div>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- Статистика -->
+<div class="mb-4">
+    <h5 class="text-muted">Всего заказов найдено: <strong>{{ paginator.count|default:0 }}</strong></h5>
+</div>
     
     <!-- Вывод заказов -->
     <div class="row">
@@ -473,22 +366,58 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Автоматическая отправка формы при изменении радио-кнопок
-    const radioButtons = document.querySelectorAll('input[type="radio"]');
-    radioButtons.forEach(radio => {
-        radio.addEventListener('change', function() {
-            this.form.submit();
+    // Каскадный фильтр технологий по категории
+    const categorySelect = document.querySelector('[name="category"]');
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            const selectedCategory = this.value;
+            document.querySelectorAll('.tech-checkbox').forEach(cb => {
+                const techCategory = cb.dataset.category;
+                const row = cb.closest('.form-check');
+                row.style.display = 
+                    (!selectedCategory || techCategory == selectedCategory) ? '' : 'none';
+            });
         });
-    });
-    
-    // Автоматическая отправка формы при изменении select
-    const selectElements = document.querySelectorAll('select');
-    selectElements.forEach(select => {
-        select.addEventListener('change', function() {
-            this.form.submit();
-        });
+    }
+});
+
+document.querySelector('[name="category"]').addEventListener('change', function() {
+    const selectedCategory = this.value;
+    document.querySelectorAll('.tech-checkbox').forEach(cb => {
+        const techCategory = cb.dataset.category;
+        cb.closest('.form-check').style.display = 
+            (!selectedCategory || techCategory === selectedCategory) ? '' : 'none';
     });
 });
+
+const techSearch = document.querySelector('#techSearch');
+if (techSearch) {
+    techSearch.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        document.querySelectorAll('.lang-group').forEach(group => {
+            let hasMatch = false;
+            const rows = group.querySelectorAll('.tech-row');
+            rows.forEach(row => {
+                const matches = !query || row.dataset.name.includes(query);
+                row.style.display = matches ? '' : 'none';
+                if (matches) hasMatch = true;
+            });
+            
+            const collapseEl = group.querySelector('.accordion-collapse');
+            const collapse = bootstrap.Collapse.getOrCreateInstance(collapseEl, {toggle: false});
+            
+            if (query && hasMatch) {
+                collapse.show();
+                group.style.display = '';
+            } else if (query && !hasMatch) {
+                group.style.display = 'none';
+            } else {
+                group.style.display = '';
+                collapse.hide();
+            }
+        });
+    });
+}
 </script>
 {% endblock %}
 

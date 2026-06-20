@@ -12,8 +12,8 @@ from django.http import HttpResponse
 from .models import Order, CancellationRequest
 from .models import Order, Application, Notification, OrderFile
 from .forms import OrderForm, ApplicationForm
-
-
+from .models import Order, Application, Notification, CancellationRequest, Category, Technology
+from .models import Language
 class AllOrdersListView(ListView):
     """ВСЕ заказы на бирже (главная страница)"""
     model = Order
@@ -22,7 +22,7 @@ class AllOrdersListView(ListView):
     paginate_by = 12
     
     def get_queryset(self):
-        queryset = Order.objects.all().select_related('customer', 'freelancer')
+        queryset = Order.objects.filter(status='open').select_related('customer', 'freelancer')
         
         # ===== ПОИСК =====
         search_query = self.request.GET.get('search', '').strip()
@@ -56,7 +56,11 @@ class AllOrdersListView(ListView):
         category = self.request.GET.get('category')
         if category:
             queryset = queryset.filter(category=category)
-        
+
+        # Фильтрация по технологиям
+        tech = self.request.GET.getlist('tech')
+        if tech:
+            queryset = queryset.filter(technologies__slug__in=tech).distinct()
         # Фильтр по участию пользователя
         participation = self.request.GET.get('participation')
         if participation == 'my_orders' and self.request.user.is_authenticated:
@@ -83,7 +87,9 @@ class AllOrdersListView(ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+        context['technologies'] = Technology.objects.all()
+        context['categories'] = Category.objects.all()
+        context['languages'] = Language.objects.prefetch_related('technology_set').all()
         # Получаем поисковый запрос
         search_query = self.request.GET.get('search', '').strip()
         context['search_query'] = search_query
@@ -125,56 +131,64 @@ class MyOrdersListView(LoginRequiredMixin, ListView):
     template_name = 'order/my_orders.html'
     context_object_name = 'orders'
     paginate_by = 12
-    
+
     def get_queryset(self):
-        # Только заказы текущего пользователя
         queryset = Order.objects.filter(
             Q(customer=self.request.user) |
             Q(freelancer=self.request.user)
-        ).select_related('customer', 'freelancer')
-        
+        ).exclude(status='canceled').select_related('customer', 'freelancer')
+
         # Фильтрация по роли
         role = self.request.GET.get('role')
         if role == 'customer':
             queryset = queryset.filter(customer=self.request.user)
         elif role == 'freelancer':
             queryset = queryset.filter(freelancer=self.request.user)
-        
+
         # Фильтрация по статусу
         status = self.request.GET.get('status')
         if status:
             queryset = queryset.filter(status=status)
-        
+
         # Фильтрация по категории
         category = self.request.GET.get('category')
         if category:
-            queryset = queryset.filter(category=category)
-        
+            queryset = queryset.filter(category_id=category)
+
+        # Фильтрация по технологиям
+        tech = self.request.GET.getlist('tech')
+        if tech:
+            queryset = queryset.filter(technologies__slug__in=tech).distinct()
+
         return queryset.order_by('-created_at')
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+        context['technologies'] = Technology.objects.all()
+        context['categories'] = Category.objects.all()
+        context['languages'] = Language.objects.prefetch_related('technology_set').all()
+        context['selected_tech'] = self.request.GET.getlist('tech')
+
         # Статистика для текущего пользователя
         user_orders = Order.objects.filter(
             Q(customer=self.request.user) |
             Q(freelancer=self.request.user)
         )
-        
+
         context['my_all_count'] = user_orders.count()
         context['my_open_count'] = user_orders.filter(status='open').count()
         context['my_in_progress_count'] = user_orders.filter(status='in_progress').count()
         context['my_completed_count'] = user_orders.filter(status='completed').count()
         context['my_canceled_count'] = user_orders.filter(status='canceled').count()
         context['title'] = 'Мои заказы'
-        
+
         # Добавляем информацию о роли пользователя
         orders_with_role = []
         for order in context['orders']:
             order.user_role = 'customer' if order.customer == self.request.user else 'freelancer'
             orders_with_role.append(order)
         context['orders'] = orders_with_role
-        
+
         return context
 
 
@@ -445,6 +459,18 @@ def withdraw_application(request, pk, application_pk):  # Измените appli
     
     return redirect('order:detail', pk=pk)
 
+@login_required
+@require_POST
+def delete_order(request, pk):
+    order = get_object_or_404(Order, pk=pk, customer=request.user)
+    
+    if order.status not in ['open', 'canceled']:
+        messages.error(request, 'Нельзя удалить заказ в текущем статусе.')
+        return redirect('order:detail', pk=pk)
+    
+    order.delete()
+    messages.success(request, 'Заказ удалён.')
+    return redirect('order:my_orders')
 
 @login_required
 @require_POST
@@ -464,7 +490,7 @@ def cancel_order(request, pk):
     reason = request.POST.get('cancel_reason', '')
 
     # Отменяем заказ
-    order.status = 'cancelled'
+    order.status = 'canceled'
     order.save()
 
     # Логируем отмену

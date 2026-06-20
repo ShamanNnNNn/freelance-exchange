@@ -6,27 +6,27 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static "deps/css/bootstrap/bootstrap.min.css" %}">
-    <link rel="stylesheet" href="{% static "deps/css/my_css.css" %}">
+    <link rel="stylesheet" href="{% static 'deps/css/bootstrap/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'deps/css/my_css.css' %}">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
     {% block css %}{% endblock %}
 
     <!-- Favicons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static "deps/favicon/apple-touch-icon.png" %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static "deps/favicon/favicon-32x32.png" %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static "deps/favicon/favicon-16x16.png" %}">
-    <link rel="manifest" href="{% static "deps/favicon/site.webmanifest" %}">
-    <title>{{ title|default:"Фриланс-биржа" }}</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'deps/favicon/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'deps/favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'deps/favicon/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'deps/favicon/site.webmanifest' %}">
+    <title>{{ title|default:'Фриланс-биржа' }}</title>
 </head>
 
 <body>
     <header>
         <nav class="navbar navbar-expand-lg bg-dark" data-bs-theme="dark">
             <div class="container">
-                <a class="navbar-brand" href="{% url "order:all_orders" %}">
-                    <i class="bi bi-briefcase me-1"></i> Фриланс-биржа
+                <a class="navbar-brand" href="{% url 'order:all_orders' %}">
+                    Фриланс-биржа
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -35,145 +35,114 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <!-- Главное меню -->
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="{% url "order:all_orders" %}">
-                                <i class="bi bi-house-door"></i> Главная
-                            </a>
+                            <a class="nav-link text-white" href="{% url 'main:index' %}">Главная</a>
                         </li>
                         
                         {% if user.is_authenticated %}
                             <li class="nav-item">
-                                <a class="nav-link text-white" href="{% url "order:my_orders" %}">
-                                    <i class="bi bi-list-ul"></i> Мои заказы
-                                </a>
+                                <a class="nav-link text-white" href="{% url 'order:my_orders' %}">Мои заказы</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white" href="{% url "order:create" %}">
-                                    <i class="bi bi-plus-circle"></i> Создать заказ
-                                </a>
+                                <a class="nav-link text-white" href="{% url 'order:create' %}">Создать заказ</a>
                             </li>
                         {% endif %}
-                        
-                        <!-- Дополнительная информация -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-white" href="#" role="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-info-circle"></i> Информация
-                            </a>
-                            <ul class="dropdown-menu bg-dark">
-                                <li><a class="dropdown-item text-white" href="#"><i class="bi bi-question-circle"></i> Как это работает</a></li>
-                                <li><a class="dropdown-item text-white" href="#"><i class="bi bi-shield-check"></i> Безопасность</a></li>
-                                <li><a class="dropdown-item text-white" href="#"><i class="bi bi-currency-dollar"></i> Цены и комиссии</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-white" href="#"><i class="bi bi-envelope"></i> Контакты</a></li>
-                            </ul>
-                        </li>
+                    
                     </ul>
                     
                     <!-- Правая часть навигации -->
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
                         <!-- Поиск заказов -->
                         <li class="nav-item me-3">
-                        <form class="d-flex" role="search" method="get" action="{% url 'order:all_orders' %}">
-                            <input class="form-control me-2" 
-                                type="search" 
-                                name="search" 
-                                placeholder="Поиск заказов..." 
-                                aria-label="Search"
-                                value="{{ request.GET.search|default:'' }}">
-                            <button class="btn btn-outline-success" type="submit">
-                                <i class="bi bi-search"></i>
-                            </button>
-                        </form>
+                            <form class="d-flex" role="search" method="get" action="{% url 'order:all_orders' %}">
+                                <input class="form-control me-2" 
+                                    type="search" 
+                                    name="search" 
+                                    placeholder="Поиск заказов..." 
+                                    aria-label="Search"
+                                    value="{{ request.GET.search|default:'' }}">
+                                <button class="btn btn-outline-success" type="submit">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </form>
                         </li>
                         
                         <!-- Авторизация/Профиль -->
-                        {% if not user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="btn btn-outline-light me-2" href="{% url "user:login" %}">
-                                <i class="bi bi-box-arrow-in-right"></i> Войти
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-primary" href="{% url "user:registration" %}">
-                                <i class="bi bi-person-plus"></i> Регистрация
-                            </a>
-                        </li>
-                        {% else %}
-                        <!-- Уведомления -->
-                        <li class="nav-item dropdown me-3">
-                            <a class="nav-link dropdown-toggle text-white" href="#" role="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-bell"></i>
-                                <span class="badge bg-danger rounded-pill">3</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end bg-dark">
-                                <li><h6 class="dropdown-header text-white">Уведомления</h6></li>
-                                <li><a class="dropdown-item text-white" href="#"><small>Новый отклик на ваш заказ</small></a></li>
-                                <li><a class="dropdown-item text-white" href="#"><small>Ваш заказ принят в работу</small></a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-white" href="#"><i class="bi bi-bell"></i> Все уведомления</a></li>
-                            </ul>
-                        </li>
-                        
-                        <!-- Профиль пользователя -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-white" href="#" role="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                {% if user.image %}
-                                    <img src="{{ user.image.url }}" alt="{{ user.username }}" 
-                                         class="rounded-circle me-1" width="30" height="30">
-                                {% else %}
-                                    <i class="bi bi-person-circle"></i>
-                                {% endif %}
-                                {{ user.username|truncatechars:15 }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end bg-dark">
-                                <li>
-                                    <div class="dropdown-header text-white">
-                                        <strong>{{ user.get_full_name|default:user.username }}</strong>
-                                        <div class="small text-muted">{{ user.email }}</div>
-                                    </div>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-white" href="{% url "user:profile" %}">
-                                    <i class="bi bi-person"></i> Профиль
-                                </a></li>
-                                <li><a class="dropdown-item text-white" href="{% url "order:my_orders" %}">
-                                    <i class="bi bi-list-ul"></i> Мои заказы
-                                </a></li>
-                                <li><a class="dropdown-item text-white" href="#">
-                                    <i class="bi bi-coin"></i> Баланс
-                                </a></li>
-                                <li><a class="dropdown-item text-white" href="#">
-                                    <i class="bi bi-gear"></i> Настройки
-                                </a></li>
-                                
-                                {% if user.is_admin or user.is_staff %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-white" href="{% url "admin:index" %}">
-                                    <i class="bi bi-speedometer2"></i> Админ панель
-                                </a></li>
-                                {% endif %}
-                                
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item text-danger" href="{% url "user:logout" %}">
-                                        <i class="bi bi-box-arrow-right"></i> Выйти
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        {% endif %}
-                    </ul>
+ {% if not user.is_authenticated %}
+        <li class="nav-item">
+            <a class="nav-link text-white" href="{% url 'user:login' %}">Войти</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white" href="{% url 'user:registration' %}">Регистрация</a>
+        </li>
+    {% else %}
+        
+        <!-- Профиль пользователя -->
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                {% if user.image %}
+                    <img src="{{ user.image.url }}" alt="{{ user.username }}" 
+                        class="rounded-circle me-1" width="30" height="30">
+                {% else %}
+                    <i class="bi bi-person-circle"></i>
+                {% endif %}
+                {{ user.username|truncatechars:15 }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end bg-dark" aria-labelledby="userDropdown">
+                <li>
+                    <div class="dropdown-header text-white">
+                        <strong>{{ user.get_full_name|default:user.username }}</strong>
+                        <div class="small text-muted">{{ user.email }}</div>
+                    </div>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item text-white" href="{% url 'user:profile' %}">
+                        <i class="bi bi-person"></i> Профиль
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item text-white" href="{% url 'order:my_orders' %}">
+                        <i class="bi bi-list-ul"></i> Мои заказы
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item text-white" href="#">
+                        <i class="bi bi-coin"></i> Баланс
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item text-white" href="#">
+                        <i class="bi bi-gear"></i> Настройки
+                    </a>
+                </li>
+                
+                {% if user.is_admin or user.is_staff %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item text-white" href="{% url 'admin:index' %}">
+                            <i class="bi bi-speedometer2"></i> Админ панель
+                        </a>
+                    </li>
+                {% endif %}
+                
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item text-danger" href="{% url 'user:logout' %}">
+                        <i class="bi bi-box-arrow-right"></i> Выйти
+                    </a>
+                </li>
+            </ul>
+        </li>
+    {% endif %}
+</ul>
                 </div>
             </div>
         </nav>
     </header>
 
-    <!-- Баннер/Статистика -->
-    {% block banner %}
+    <!-- Баннер с призывом и статистикой (всегда виден) -->
     <div class="bg-primary text-white py-3">
         <div class="container">
             <div class="row align-items-center">
@@ -193,30 +162,20 @@
             </div>
         </div>
     </div>
-    {% endblock %}
 
     <!-- Основной контент -->
     <main class="py-4">
         <div class="container">
             <!-- Сообщения -->
             {% if messages %}
-            <div class="messages mb-4">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {% if message.tags == 'success' %}
-                        <i class="bi bi-check-circle me-2"></i>
-                    {% elif message.tags == 'error' %}
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                    {% elif message.tags == 'warning' %}
-                        <i class="bi bi-exclamation-circle me-2"></i>
-                    {% elif message.tags == 'info' %}
-                        <i class="bi bi-info-circle me-2"></i>
-                    {% endif %}
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="messages mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
             {% endif %}
             
             <!-- Контент страницы -->
@@ -224,103 +183,52 @@
         </div>
     </main>
 
-    <!-- Footer -->
+    <!-- Footer (всегда виден) -->
     <footer class="bg-dark text-white py-4 mt-5">
         <div class="container">
+            <!-- Магазин мебели HOME -->
+            <div class="text-center mb-4">
+                <h3 class="text-white">Фриланс-биржа</h3>
+            </div>
+            
+            <!-- Навигация в футере - одной строкой -->
             <div class="row">
-                <div class="col-md-4 mb-3">
-                    <h5 class="mb-3">Фриланс-биржа</h5>
-                    <p class="text-muted">
-                        Платформа для поиска исполнителей и заказчиков. 
-                        Реализуйте свои проекты с профессионалами.
-                    </p>
-                </div>
-                <div class="col-md-2 mb-3">
-                    <h5 class="mb-3">Заказчикам</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-muted text-decoration-none">Разместить заказ</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">Как это работает</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">Безопасная сделка</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">Цены</a></li>
+                <div class="col-12">
+                    <ul class="nav justify-content-center">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="#">Фриланс-биржа</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="#">Заказчикам</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="#">Исполнителям</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="#">Контакты</a>
+                        </li>
                     </ul>
-                </div>
-                <div class="col-md-2 mb-3">
-                    <h5 class="mb-3">Исполнителям</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="{% url "order:all_orders" %}" class="text-muted text-decoration-none">Найти заказ</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">Создать портфолио</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">Рейтинг исполнителей</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">Как начать работать</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <h5 class="mb-3">Контакты</h5>
-                    <ul class="list-unstyled text-muted">
-                        <li><i class="bi bi-envelope me-2"></i> support@freelance-platform.ru</li>
-                        <li><i class="bi bi-telephone me-2"></i> +8 (800) 555-35-35</li>
-                        <li><i class="bi bi-geo-alt me-2"></i> Москва, ул. Примерная, 10</li>
-                    </ul>
-                    <div class="mt-3">
-                        <a href="#" class="text-white me-3"><i class="bi bi-telegram fs-5"></i></a>
-                        <a href="#" class="text-white me-3"><i class="bi bi-whatsapp fs-5"></i></a>
-                        <a href="#" class="text-white me-3"><i class="bi bi-vk fs-5"></i></a>
-                        <a href="#" class="text-white"><i class="bi bi-youtube fs-5"></i></a>
-                    </div>
                 </div>
             </div>
+            
             <hr class="border-secondary">
+            
+            <!-- Копирайт -->
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-12 text-center">
                     <p class="mb-0 text-muted">
                         © 2023 Фриланс-биржа. Все права защищены.
                     </p>
-                </div>
-                <div class="col-md-6 text-end">
-                    <a href="#" class="text-muted text-decoration-none me-3">Политика конфиденциальности</a>
-                    <a href="#" class="text-muted text-decoration-none">Пользовательское соглашение</a>
                 </div>
             </div>
         </div>
     </footer>
 
     <!-- Скрипты -->
-    <script src="{% static "deps/js/jquery/jquery-3.7.0.min.js" %}"></script>
-    <script src="{% static "deps/js/bootstrap/bootstrap.bundle.min.js" %}"></script>
-    <script src="{% static "deps/js/main.js" %}"></script>
+    <script src="{% static 'deps/js/jquery/jquery-3.7.0.min.js' %}"></script>
+    <script src="{% static 'deps/js/bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'deps/js/main.js' %}"></script>
     
-    <!-- Блок для дополнительных скриптов -->
     {% block scripts %}{% endblock %}
-    
-    <script>
-    // Активация dropdown-ов при наведении для десктопа
-    document.addEventListener('DOMContentLoaded', function() {
-        const dropdowns = document.querySelectorAll('.navbar .dropdown');
-        
-        dropdowns.forEach(dropdown => {
-            dropdown.addEventListener('mouseenter', function() {
-                if (window.innerWidth > 992) { // Только для десктопа
-                    const dropdownMenu = this.querySelector('.dropdown-menu');
-                    dropdownMenu.classList.add('show');
-                }
-            });
-            
-            dropdown.addEventListener('mouseleave', function() {
-                if (window.innerWidth > 992) {
-                    const dropdownMenu = this.querySelector('.dropdown-menu');
-                    dropdownMenu.classList.remove('show');
-                }
-            });
-        });
-        
-        // Автоматическое скрытие алертов через 5 секунд
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            });
-        }, 5000);
-    });
-    </script>
 </body>
 </html>
