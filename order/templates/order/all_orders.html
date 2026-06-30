@@ -31,7 +31,6 @@
         </div>
     {% endif %}
 
-    <!-- Фильтры для заказов -->
     <div class="mb-3">
     <button class="btn btn-secondary btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#filtersPanel">
         <i class="bi bi-funnel"></i> Фильтры
@@ -40,20 +39,8 @@
     <div class="collapse mt-2" id="filtersPanel">
         <form action="{% url 'order:all_orders' %}" method="get" class="bg-dark rounded p-4" data-bs-theme="dark">
             <div class="row">                
-
-                <!-- Категория и сортировка -->
+                <!-- Сортировка -->
                 <div class="col-md-3 mb-3">
-                    <p class="text-white fw-bold">Категория</p>
-                    <select name="category" class="form-select mb-3">
-                        <option value="">Все категории</option>
-                        {% for cat in categories %}
-                            <option value="{{ cat.id }}" 
-                                {% if request.GET.category == cat.id|stringformat:"i" %}selected{% endif %}>
-                                {{ cat.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-
                     <p class="text-white fw-bold">Сортировка</p>
                     <select name="order_by" class="form-select">
                         <option value="default" {% if not request.GET.order_by or request.GET.order_by == 'default' %}selected{% endif %}>По умолчанию</option>
@@ -64,35 +51,37 @@
                     </select>
                 </div>
 
-        <p class="text-white fw-bold">Технологии</p>
-        <input type="text" class="form-control form-control-sm mb-2" id="techSearch" 
-            placeholder="Поиск технологии...">
+                <div class="col-md-9 mb-3">
+                    <p class="text-white fw-bold">Технологии</p>
+                    <input type="text" class="form-control form-control-sm mb-2" id="techSearch" 
+                        placeholder="Поиск технологии...">
 
-        <div class="accordion" id="techAccordion">
-            {% for lang in languages %}
-            <div class="accordion-item bg-dark border-secondary lang-group" data-category="{{ lang.categories.all|join:',' }}">
-                <h2 class="accordion-header">
-                    <button class="accordion-button bg-dark text-white collapsed" type="button" 
-                            data-bs-toggle="collapse" data-bs-target="#lang_{{ lang.slug }}">
-                        {{ lang.name }}
-                    </button>
-                </h2>
-                <div id="lang_{{ lang.slug }}" class="accordion-collapse collapse">
-                    <div class="accordion-body">
-                        {% for tech in lang.technology_set.all %}
-                        <div class="form-check text-white mb-1 tech-row" data-name="{{ tech.name|lower }}">
-                            <input class="form-check-input" type="checkbox" 
-                                name="tech" value="{{ tech.slug }}"
-                                id="tech_{{ tech.slug }}"
-                                {% if tech.slug in selected_tech %}checked{% endif %}>
-                            <label class="form-check-label" for="tech_{{ tech.slug }}">{{ tech.name }}</label>
+                    <div class="accordion" id="techAccordion">
+                        {% for lang in languages %}
+                        <div class="accordion-item bg-dark border-secondary lang-group">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button bg-dark text-white collapsed" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#lang_{{ lang.slug }}">
+                                    {{ lang.name }}
+                                </button>
+                            </h2>
+                            <div id="lang_{{ lang.slug }}" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    {% for tech in lang.technology_set.all %}
+                                    <div class="form-check text-white mb-1 tech-row" data-name="{{ tech.name|lower }}">
+                                        <input class="form-check-input" type="checkbox" 
+                                            name="tech" value="{{ tech.slug }}"
+                                            id="tech_{{ tech.slug }}"
+                                            {% if tech.slug in selected_tech %}checked{% endif %}>
+                                        <label class="form-check-label" for="tech_{{ tech.slug }}">{{ tech.name }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
-            </div>
-            {% endfor %}
-        </div>
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top border-secondary">
@@ -101,6 +90,7 @@
             </div>
         </form>
     </div>
+</div>
 
     
     <!-- Кнопка создания нового заказа -->
@@ -170,13 +160,8 @@
                             </div>
                         {% endif %}
                         
-                        <!-- Информация о заказе -->
                         <div class="row mb-3">
-                            <div class="col-6">
-                                <small class="text-muted">Категория</small>
-                                <div><strong>{{ order.get_category_display }}</strong></div>
-                            </div>
-                            <div class="col-6">
+                            <div class="col-12">
                                 <small class="text-muted">Бюджет</small>
                                 <div><strong>{{ order.budget }} {{ order.get_currency_display }}</strong></div>
                             </div>
@@ -365,30 +350,6 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Каскадный фильтр технологий по категории
-    const categorySelect = document.querySelector('[name="category"]');
-    if (categorySelect) {
-        categorySelect.addEventListener('change', function() {
-            const selectedCategory = this.value;
-            document.querySelectorAll('.tech-checkbox').forEach(cb => {
-                const techCategory = cb.dataset.category;
-                const row = cb.closest('.form-check');
-                row.style.display = 
-                    (!selectedCategory || techCategory == selectedCategory) ? '' : 'none';
-            });
-        });
-    }
-});
-
-document.querySelector('[name="category"]').addEventListener('change', function() {
-    const selectedCategory = this.value;
-    document.querySelectorAll('.tech-checkbox').forEach(cb => {
-        const techCategory = cb.dataset.category;
-        cb.closest('.form-check').style.display = 
-            (!selectedCategory || techCategory === selectedCategory) ? '' : 'none';
-    });
-});
 
 const techSearch = document.querySelector('#techSearch');
 if (techSearch) {

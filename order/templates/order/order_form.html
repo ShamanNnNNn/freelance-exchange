@@ -69,30 +69,47 @@
                                 <div class="form-text">{{ form.tags_input.help_text }}</div>
                             </div>
 
-                        <!-- Технологии -->
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold">Технологии</label>
-                            <div class="border rounded p-3 d-flex flex-wrap gap-3" id="tech-checkboxes">
-                                {% for tech in form.technologies.field.queryset %}
-                                <div class="form-check tech-item" data-category="{{ tech.category.id }}">
-                                    <input class="form-check-input tech-checkbox"
-                                        type="checkbox"
-                                        name="technologies"
-                                        value="{{ tech.pk }}"
-                                        id="tech_{{ tech.pk }}"
-                                        {% if tech.pk in form.technologies.value %}checked{% endif %}>
-                                    <label class="form-check-label" for="tech_{{ tech.pk }}">
-                                        {{ tech.name }}
-                                    </label>
+                <!-- Технологии -->
+                <div class="col-md-12 mb-3">
+                    <label class="form-label fw-bold">Технологии</label>
+                    
+                    <input type="text" class="form-control form-control-sm mb-2" id="techSearchForm"
+                        placeholder="Поиск технологии...">
+
+                    <div class="accordion" id="techAccordionForm">
+                        {% for lang in languages %}
+                        <div class="accordion-item lang-group-form">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#lang_form_{{ lang.slug }}">
+                                    {{ lang.name }}
+                                </button>
+                            </h2>
+                            <div id="lang_form_{{ lang.slug }}" class="accordion-collapse collapse">
+                                <div class="accordion-body d-flex flex-wrap gap-3">
+                                    {% for tech in lang.technology_set.all %}
+                                    <div class="form-check tech-row-form" data-name="{{ tech.name|lower }}">
+                                        <input class="form-check-input"
+                                            type="checkbox"
+                                            name="technologies"
+                                            value="{{ tech.pk }}"
+                                            id="tech_{{ tech.pk }}"
+                                            {% if tech.pk in form.technologies.value %}checked{% endif %}>
+                                        <label class="form-check-label" for="tech_{{ tech.pk }}">
+                                            {{ tech.name }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
                                 </div>
-                                {% endfor %}
-                            </div>
-                            {% if form.technologies.errors %}
-                                <div class="text-danger small mt-1">{{ form.technologies.errors }}</div>
-                            {% endif %}
-                        </div>
                             </div>
                         </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if form.technologies.errors %}
+                        <div class="text-danger small mt-1">{{ form.technologies.errors }}</div>
+                    {% endif %}
+                </div>
                         
                         <!-- Бюджет и сроки -->
                         <div class="mb-4">
@@ -207,6 +224,34 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         // Применить при загрузке если категория уже выбрана
         categorySelect.dispatchEvent(new Event('change'));
+    }
+
+    const techSearchForm = document.querySelector('#techSearchForm');
+    if (techSearchForm) {
+        techSearchForm.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            document.querySelectorAll('.lang-group-form').forEach(group => {
+                let hasMatch = false;
+                group.querySelectorAll('.tech-row-form').forEach(row => {
+                    const matches = !query || row.dataset.name.includes(query);
+                    row.style.display = matches ? '' : 'none';
+                    if (matches) hasMatch = true;
+                });
+
+                const collapseEl = group.querySelector('.accordion-collapse');
+                const collapse = bootstrap.Collapse.getOrCreateInstance(collapseEl, {toggle: false});
+
+                if (query && hasMatch) {
+                    collapse.show();
+                    group.style.display = '';
+                } else if (query && !hasMatch) {
+                    group.style.display = 'none';
+                } else {
+                    group.style.display = '';
+                    collapse.hide();
+                }
+            });
+        });
     }
 </script>
 

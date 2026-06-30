@@ -1,7 +1,6 @@
 # order/admin.py
 from django.contrib import admin
-from .models import Order, OrderFile, Application, Notification, CancellationRequest
-from .models import Order, OrderFile, Application, Notification, CancellationRequest, Category, Technology
+from .models import Order, OrderFile, Application, Notification, CancellationRequest, Technology
 
 class OrderFileInline(admin.TabularInline):
     """Inline для отображения файлов внутри заказа"""
@@ -12,16 +11,16 @@ class OrderFileInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['title', 'customer', 'category', 'budget', 'currency', 
+    list_display = ['title', 'customer', 'budget', 'currency', 
                     'status', 'deadline', 'created_at']
-    list_filter = ['status', 'category', 'created_at', 'deadline']
+    list_filter = ['status', 'created_at', 'deadline']
     search_fields = ['title', 'description', 'tags', 'customer__username', 
                      'customer__email']
     list_editable = ['status']  # Можно менять статус прямо из списка
     readonly_fields = ['created_at', 'updated_at']
     fieldsets = (
         ('Основная информация', {
-            'fields': ('title', 'description', 'category', 'tags')
+            'fields': ('title', 'description', 'tags')
         }),
         ('Бюджет и сроки', {
             'fields': ('budget', 'currency', 'deadline')
@@ -86,6 +85,5 @@ class CancellationRequestAdmin(admin.ModelAdmin):
 
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'category']
+    list_display = ['name', 'slug']
     prepopulated_fields = {'slug': ('name',)}
-    list_filter = ['category']

@@ -2,6 +2,7 @@ venv/
 .pylintrc
 __pycahe__/
 
+.env
 .vscde
 .idea
 

@@ -198,6 +198,11 @@ class OrderCreateView(LoginRequiredMixin, CreateView):
     form_class = OrderForm
     template_name = 'order/order_form.html'
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['languages'] = Language.objects.prefetch_related('technology_set').all()
+        return context
+    
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user

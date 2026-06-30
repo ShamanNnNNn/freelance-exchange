@@ -37,7 +37,6 @@ class Order(models.Model):
     title = models.CharField('Название', max_length=200)
     description = models.TextField('Описание')
     status = models.CharField('Статус', max_length=20, choices=STATUS_CHOICES, default='open')
-    category = models.ForeignKey('Category', on_delete=models.PROTECT, null=True, blank=True, verbose_name='Категория')
     budget = models.DecimalField('Бюджет', max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     currency = models.CharField('Валюта', max_length=3, choices=[('RUB', '₽'), ('USD', '$'), ('EUR', '€')], default='RUB')
     deadline = models.DateField('Срок выполнения')
@@ -335,8 +334,7 @@ class Category(models.Model):
 class Technology(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
-    category = models.ForeignKey('Category', on_delete=models.SET_NULL,
-                                  null=True, blank=True)
+
     language = models.ForeignKey('Language', on_delete=models.SET_NULL,
                                   null=True, blank=True, verbose_name='Язык')
 

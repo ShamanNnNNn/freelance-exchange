@@ -1,7 +1,6 @@
 from django import forms
 from django.core.validators import MinValueValidator
-from .models import Order, Application, Technology, Category
-
+from .models import Order, Application, Technology
 class OrderForm(forms.ModelForm):
     files = forms.FileField(
         label='Прикрепить файлы',
@@ -16,12 +15,11 @@ class OrderForm(forms.ModelForm):
 
     class Meta:
         model = Order
-        fields = ['title', 'description', 'category', 'budget', 'currency',
-                  'deadline', 'tags', 'technologies']
+        fields = ['title', 'description', 'budget', 'currency',
+          'deadline', 'tags', 'technologies']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Название заказа'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 6}),
-            'category': forms.Select(attrs={'class': 'form-control'}),
             'budget': forms.NumberInput(attrs={'class': 'form-control'}),
             'currency': forms.Select(attrs={'class': 'form-control'}),
             'deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
@@ -30,7 +28,6 @@ class OrderForm(forms.ModelForm):
         labels = {
             'title': 'Название заказа',
             'description': 'Описание',
-            'category': 'Категория',
             'budget': 'Бюджет',
             'currency': 'Валюта',
             'deadline': 'Срок выполнения',
@@ -45,12 +42,6 @@ class OrderForm(forms.ModelForm):
             import datetime
             tomorrow = datetime.date.today() + datetime.timedelta(days=1)
             self.fields['deadline'].widget.attrs['min'] = tomorrow.isoformat()
-        
-        # Базовая категория — Веб-разработка
-        if not self.instance.pk:  # только при создании, не при редактировании
-            web_category = Category.objects.filter(slug='web').first()
-            if web_category:
-                self.fields['category'].initial = web_category.pk
     
 
     def save(self, commit=True):
