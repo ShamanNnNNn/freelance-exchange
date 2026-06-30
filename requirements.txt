@@ -4,3 +4,4 @@ psycopg2-binary
 whitenoise
 djangorestframework
 python-decouple
+dj-database-url
