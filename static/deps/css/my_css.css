@@ -170,6 +170,22 @@ header {
   font-size: 0.875rem;
   line-height: 1.6;
 }
+.card-title {
+  color: var(--text-primary) !important;
+}
+
+.card-title a {
+  color: var(--text-primary) !important;
+}
+
+.card .card-body * {
+  color: var(--text-primary);
+}
+
+.card .card-body p, 
+.card .card-body small {
+  color: var(--text-secondary) !important;
+}
 
 /* Белые карточки (профиль, форма) */
 .bg-white {
