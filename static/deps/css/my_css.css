@@ -49,13 +49,23 @@ header, main, footer {
   z-index: 1;
 }
 
-.dropdown-menu {
-  z-index: 1050;
+header {
+  z-index: 1030;
 }
 
 .navbar {
-  z-index: 1040;
+  z-index: 1030 !important;
 }
+
+.dropdown-menu {
+  z-index: 9999 !important;
+  pointer-events: all !important;
+}
+
+.dropdown-menu.show {
+  z-index: 9999 !important;
+}
+
 
 .dropdown-menu.show {
   z-index: 1050;
@@ -63,11 +73,7 @@ header, main, footer {
 }
 /* ===== NAVBAR ===== */
 .navbar {
-  background: rgba(8, 8, 16, 0.85) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-  padding: 0.75rem 0;
+  z-index: 1040;
 }
 
 .navbar-brand {
@@ -306,9 +312,7 @@ p {
 
 /* ===== ДРОПДАУН ===== */
 .dropdown-menu {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  z-index: 1050;
 }
 
 .dropdown-item {
