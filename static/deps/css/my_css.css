@@ -49,6 +49,18 @@ header, main, footer {
   z-index: 1;
 }
 
+.dropdown-menu {
+  z-index: 1050;
+}
+
+.navbar {
+  z-index: 1040;
+}
+
+.dropdown-menu.show {
+  z-index: 1050;
+  pointer-events: all;
+}
 /* ===== NAVBAR ===== */
 .navbar {
   background: rgba(8, 8, 16, 0.85) !important;
