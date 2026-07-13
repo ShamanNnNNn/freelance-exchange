@@ -300,14 +300,13 @@ p {
   font-size: 0.9rem;
 }
 
-.accordion-button:not(.collapsed) {
-  background: rgba(59,130,246,0.08);
-  color: var(--accent);
-  box-shadow: none;
+/* Добавь эти строки */
+.form-check-label {
+  color: var(--text-primary) !important;
 }
 
-.accordion-button::after {
-  filter: invert(1);
+.form-check {
+  color: var(--text-primary);
 }
 
 /* ===== ДРОПДАУН ===== */
