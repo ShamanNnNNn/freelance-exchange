@@ -435,3 +435,14 @@ main {
     transition-duration: 0.01ms !important;
   }
 }
+/* ===== LIST GROUP ===== */
+.list-group-item {
+  background: transparent !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+
+.list-group-flush .list-group-item {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+}
