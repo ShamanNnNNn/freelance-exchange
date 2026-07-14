@@ -484,3 +484,23 @@ main .text-muted,
 main small {
   color: var(--text-secondary) !important;
 }
+.modal {
+  z-index: 1055 !important;
+}
+
+.modal-backdrop {
+  z-index: 1054 !important;
+}
+
+.modal-dialog {
+  pointer-events: all;
+}
+.modal-dialog {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
