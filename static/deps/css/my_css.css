@@ -128,9 +128,14 @@ header {
 
 /* ===== ANNOUNCEMENT BAR ===== */
 .bg-primary.text-white.py-3 {
-  background: rgba(59, 130, 246, 0.12) !important;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.25) !important;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.3);
   font-size: 0.85rem;
+  color: #ffffff !important;
+}
+
+.bg-primary.text-white.py-3 * {
+  color: #ffffff !important;
 }
 
 /* ===== КАРТОЧКИ ЗАКАЗОВ ===== */
