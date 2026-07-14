@@ -446,3 +446,36 @@ main {
   background: transparent !important;
   color: var(--text-primary) !important;
 }
+/* ===== ГЛОБАЛЬНЫЙ СВЕТЛЫЙ ТЕКСТ ===== */
+.card .card-body,
+.card .card-body p,
+.card .card-body span,
+.card .card-body div,
+.card .card-body strong {
+  color: var(--text-primary) !important;
+}
+
+.card .card-body .text-muted,
+.card .card-body small {
+  color: var(--text-secondary) !important;
+}
+
+/* Описание в карточке */
+.card-text,
+.card-text * {
+  color: var(--text-secondary) !important;
+}
+
+/* Весь основной контент */
+main p,
+main span,
+main div,
+main strong,
+main label {
+  color: var(--text-primary);
+}
+
+main .text-muted,
+main small {
+  color: var(--text-secondary) !important;
+}
