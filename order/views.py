@@ -508,7 +508,7 @@ def cancel_order(request, pk):
 @login_required
 @require_POST
 def complete_order(request, pk):
-    """Завершение заказа (только для исполнителя)"""
+    """Исполнитель сдаёт работу на проверку"""
     order = get_object_or_404(Order, pk=pk)
     
     if order.freelancer != request.user:
@@ -516,13 +516,23 @@ def complete_order(request, pk):
         return redirect('order:detail', pk=pk)
     
     if order.status != 'in_progress':
-        messages.error(request, 'Можно завершить только заказы в работе')
+        messages.error(request, 'Можно сдать только заказы в работе')
         return redirect('order:detail', pk=pk)
     
-    order.status = 'completed'
+    order.status = 'pending_review'
     order.save()
     
-    messages.success(request, 'Заказ успешно завершен')
+    # Уведомление заказчику
+    Notification.objects.create(
+        user=order.customer,
+        title='Исполнитель сдал работу!',
+        message=f'{request.user.get_full_name() or request.user.username} сдал работу по заказу "{order.title}". Проверьте и подтвердите.',
+        notification_type='order_completed',
+        related_object=f'order:{order.id}',
+        is_important=True
+    )
+    
+    messages.success(request, 'Работа сдана на проверку. Ожидайте подтверждения заказчика.')
     return redirect('order:detail', pk=pk)
 
 
@@ -606,6 +616,36 @@ def confirm_cancellation(request, pk):
     
     # Отправляем уведомление заказчику
     messages.success(request, 'Вы подтвердили отмену заказа.')
+    return redirect('order:detail', pk=pk)
+
+@login_required
+@require_POST
+def confirm_completion(request, pk):
+    """Заказчик подтверждает выполнение"""
+    order = get_object_or_404(Order, pk=pk)
+    
+    if order.customer != request.user:
+        messages.error(request, 'Только заказчик может подтвердить выполнение')
+        return redirect('order:detail', pk=pk)
+    
+    if order.status != 'pending_review':
+        messages.error(request, 'Заказ не ожидает подтверждения')
+        return redirect('order:detail', pk=pk)
+    
+    order.status = 'completed'
+    order.save()
+    
+    # Уведомление исполнителю
+    Notification.objects.create(
+        user=order.freelancer,
+        title='Заказ подтверждён!',
+        message=f'Заказчик подтвердил выполнение заказа "{order.title}".',
+        notification_type='order_completed',
+        related_object=f'order:{order.id}',
+        is_important=True
+    )
+    
+    messages.success(request, 'Вы подтвердили выполнение заказа.')
     return redirect('order:detail', pk=pk)
 
 @login_required

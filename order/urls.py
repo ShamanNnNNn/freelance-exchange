@@ -39,4 +39,5 @@ urlpatterns = [
     path('<int:pk>/cancel/revoke/', views.revoke_cancellation, name='revoke_cancellation'),
     
     path('<int:pk>/delete/', views.delete_order, name='delete'),
+    path('<int:pk>/confirm-completion/', views.confirm_completion, name='confirm_completion'),
 ]
