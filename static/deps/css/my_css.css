@@ -581,3 +581,7 @@ body.modal-open .modal {
   border-color: var(--border);
   color: var(--text-secondary);
 }
+/* ===== BG-LIGHT OVERRIDE ===== */
+.bg-light {
+  background: rgba(255,255,255,0.05) !important;
+}

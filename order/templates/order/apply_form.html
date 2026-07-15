@@ -16,15 +16,11 @@
                     <!-- Информация о заказе -->
                     <div class="mb-4">
                         <h5 class="text-primary mb-3">Информация о заказе</h5>
-                        <div class="card bg-light">
+                        <div class="card" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);">
                             <div class="card-body">
                                 <h6 class="card-title">{{ order.title }}</h6>
                                 <p class="card-text text-muted">{{ order.description|truncatechars:200 }}</p>
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <small class="text-muted">Категория:</small>
-                                        <div><strong>{{ order.get_category_display }}</strong></div>
-                                    </div>
                                     <div class="col-md-6">
                                         <small class="text-muted">Бюджет:</small>
                                         <div><strong>{{ order.budget }} {{ order.get_currency_display }}</strong></div>
