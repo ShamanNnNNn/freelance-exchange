@@ -53,10 +53,11 @@
 
                 <div class="col-md-9 mb-3">
                     <p class="text-white fw-bold">Технологии</p>
-                    <input type="text" class="form-control form-control-sm mb-2" id="techSearch" 
-                        placeholder="Поиск технологии...">
+                        <input type="text" class="form-control form-control-sm mb-2" id="techSearch" 
+                            placeholder="Поиск технологии...">
 
-                    <div class="accordion" id="techAccordion">
+                        <div class="tech-scroll-container">
+                        <div class="accordion" id="techAccordion">
                         {% for lang in languages %}
                         <div class="accordion-item bg-dark border-secondary lang-group">
                             <h2 class="accordion-header">

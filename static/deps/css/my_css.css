@@ -585,3 +585,29 @@ body.modal-open .modal {
 .bg-light {
   background: rgba(255,255,255,0.05) !important;
 }
+
+/* Скроллбар в фильтре технологий */
+.tech-scroll-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.tech-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+}
+.tech-scroll-container {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+}
+
+.tech-scroll-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.tech-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+}
