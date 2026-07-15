@@ -421,17 +421,20 @@ document.addEventListener('DOMContentLoaded', function() {
     modals.forEach(modalId => {
         const modalElement = document.getElementById(modalId);
         if (modalElement) {
-            const forms = modalElement.querySelectorAll('form');
-            forms.forEach(form => {
-                form.addEventListener('submit', function() {
-                    const modal = bootstrap.Modal.getInstance(modalElement);
-                    if (modal) {
-                        modal.hide();
-                    }
+            try {
+                const forms = modalElement.querySelectorAll('form');
+                forms.forEach(form => {
+                    form.addEventListener('submit', function() {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) modal.hide();
+                    });
                 });
-            });
+            } catch(e) {
+                console.log('Modal init error:', modalId, e);
+            }
         }
     });
+});
     
     // Обработка подтверждений перед отправкой форм
     const confirmButtons = document.querySelectorAll('button[onclick*="confirm"]');
