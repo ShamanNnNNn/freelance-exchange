@@ -260,9 +260,11 @@
                             {% endif %}
                             
                             
-                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#completeModal">
-                                <i class="bi bi-check2-circle"></i> Завершить
-                            </button>
+                            {% if order.freelancer == user and order.status == 'in_progress' %}
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#completeModal">
+                                    <i class="bi bi-check2-circle"></i> Завершить
+                                </button>
+                            {% endif %}
                             
                         </div>
                     </div>

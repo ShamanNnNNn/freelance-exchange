@@ -44,9 +44,28 @@ body::before {
 }
 
 /* Всё содержимое поверх оверлея */
-header, main, footer {
+header {
+  position: relative;
+  z-index: 1030;
+}
+
+main {
   position: relative;
   z-index: 1;
+}
+
+footer {
+  position: relative;
+  z-index: 1;
+}
+
+.modal {
+  z-index: 1055 !important;
+}
+
+.modal-backdrop {
+  z-index: 1050 !important;
+  pointer-events: none;
 }
 
 header {
@@ -503,4 +522,19 @@ main small {
 .modal-body {
   max-height: 60vh;
   overflow-y: auto;
+}
+.modal {
+  z-index: 1055 !important;
+}
+
+.modal-backdrop {
+  z-index: 1054 !important;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+body.modal-open .modal {
+  pointer-events: all !important;
 }
