@@ -19,18 +19,9 @@ class Order(models.Model):
         ('in_progress', 'В работе'),
         ('completed', 'Завершен'),
         ('canceled', 'Отменен'),
+        ('pending_review', 'На проверке'),
         ('closed', 'Закрыт'),
         ('cancelling', 'В процессе отмены'),
-    ]
-    
-    CATEGORY_CHOICES = [
-        ('web', 'Веб-разработка'),
-        ('mobile', 'Мобильная разработка'),
-        ('design', 'Дизайн'),
-        ('marketing', 'Маркетинг'),
-        ('writing', 'Копирайтинг'),
-        ('translation', 'Переводы'),
-        ('other', 'Другое'),
     ]
     
     # Основные поля
