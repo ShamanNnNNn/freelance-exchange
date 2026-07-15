@@ -248,9 +248,9 @@
                                         </form>
                                     {% endif %}
                                 {% elif order.status == 'open' %}
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#applyModal">
+                                    <a href="{% url 'order:apply' order.pk %}" class="btn btn-success">
                                         <i class="bi bi-check-circle"></i> Откликнуться
-                                    </button>
+                                    </a>
                                 {% endif %}
                                 
                                 <!-- Кнопки для исполнителя при запросе отмены -->
@@ -437,7 +437,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Автоматическое закрытие модальных окон после отправки формы
-    const modals = ['applyModal', 'cancelOpenModal', 'cancelInProgressModal', 'completeModal'];
+    const modals = ['cancelOpenModal', 'cancelInProgressModal', 'completeModal'];
     
     modals.forEach(modalId => {
         const modalElement = document.getElementById(modalId);
