@@ -679,6 +679,40 @@ def reject_completion(request, pk):
 
 @login_required
 @require_POST
+def reject_cancellation(request, pk):
+    """Исполнитель отклоняет отмену"""
+    order = get_object_or_404(Order, pk=pk)
+    
+    if order.freelancer != request.user:
+        messages.error(request, 'У вас нет прав для этого действия.')
+        return redirect('order:detail', pk=pk)
+    
+    if order.status != 'cancelling':
+        messages.error(request, 'Нет активного запроса на отмену.')
+        return redirect('order:detail', pk=pk)
+    
+    if not hasattr(order, 'cancellation_request'):
+        messages.error(request, 'Запрос на отмену не найден.')
+        return redirect('order:detail', pk=pk)
+    
+    cancellation_request = order.cancellation_request
+    
+    if cancellation_request.status != 'pending':
+        messages.error(request, 'Запрос на отмену уже обработан.')
+        return redirect('order:detail', pk=pk)
+    
+    cancellation_request.status = 'rejected'
+    cancellation_request.responded_at = timezone.now()
+    cancellation_request.save()
+    
+    order.status = 'in_progress'
+    order.save()
+    
+    messages.success(request, 'Вы отклонили запрос на отмену.')
+    return redirect('order:detail', pk=pk)
+
+@login_required
+@require_POST
 def revoke_cancellation(request, pk):
     """Заказчик отзывает запрос на отмену"""
     order = get_object_or_404(Order, pk=pk)
