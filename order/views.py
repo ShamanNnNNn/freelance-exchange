@@ -650,39 +650,31 @@ def confirm_completion(request, pk):
 
 @login_required
 @require_POST
-def reject_cancellation(request, pk):
-    """Исполнитель отклоняет отмену"""
+def reject_completion(request, pk):
+    """Заказчик отклоняет выполнение и возвращает в работу"""
     order = get_object_or_404(Order, pk=pk)
     
-    # Проверка прав
-    if order.freelancer != request.user:
-        messages.error(request, 'У вас нет прав для этого действия.')
+    if order.customer != request.user:
+        messages.error(request, 'Только заказчик может отклонить выполнение')
         return redirect('order:detail', pk=pk)
     
-    if order.status != 'cancelling':
-        messages.error(request, 'Нет активного запроса на отмену.')
+    if order.status != 'pending_review':
+        messages.error(request, 'Заказ не ожидает подтверждения')
         return redirect('order:detail', pk=pk)
     
-    if not hasattr(order, 'cancellation_request'):
-        messages.error(request, 'Запрос на отмену не найден.')
-        return redirect('order:detail', pk=pk)
-    
-    cancellation_request = order.cancellation_request
-    
-    if cancellation_request.status != 'pending':
-        messages.error(request, 'Запрос на отмену уже обработан.')
-        return redirect('order:detail', pk=pk)
-    
-    # Отклоняем отмену
-    cancellation_request.status = 'rejected'
-    cancellation_request.responded_at = timezone.now()
-    cancellation_request.save()
-    
-    # Возвращаем заказ в работу
     order.status = 'in_progress'
     order.save()
     
-    messages.success(request, 'Вы отклонили запрос на отмену.')
+    Notification.objects.create(
+        user=order.freelancer,
+        title='Работа возвращена на доработку',
+        message=f'Заказчик вернул работу по заказу "{order.title}" на доработку.',
+        notification_type='order_canceled',
+        related_object=f'order:{order.id}',
+        is_important=True
+    )
+    
+    messages.warning(request, 'Работа возвращена исполнителю на доработку.')
     return redirect('order:detail', pk=pk)
 
 @login_required
