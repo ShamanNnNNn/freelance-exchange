@@ -414,41 +414,32 @@
 
 {% block scripts %}
 <script>
-// Автоматическое закрытие модальных окон после отправки формы
 document.addEventListener('DOMContentLoaded', function() {
+    // Автоматическое закрытие модальных окон после отправки формы
     const modals = ['applyModal', 'cancelOpenModal', 'cancelInProgressModal', 'completeModal'];
     
     modals.forEach(modalId => {
         const modalElement = document.getElementById(modalId);
         if (modalElement) {
-            try {
-                const forms = modalElement.querySelectorAll('form');
-                forms.forEach(form => {
-                    form.addEventListener('submit', function() {
-                        const modal = bootstrap.Modal.getInstance(modalElement);
-                        if (modal) modal.hide();
-                    });
+            const forms = modalElement.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) modal.hide();
                 });
-            } catch(e) {
-                console.log('Modal init error:', modalId, e);
-            }
+            });
         }
     });
-});
     
     // Обработка подтверждений перед отправкой форм
     const confirmButtons = document.querySelectorAll('button[onclick*="confirm"]');
     confirmButtons.forEach(button => {
-        const originalOnClick = button.getAttribute('onclick');
         button.removeAttribute('onclick');
         button.addEventListener('click', function(e) {
             const result = confirm('Вы уверены, что хотите выполнить это действие?');
             if (result) {
-                // Находим родительскую форму и отправляем
                 const form = button.closest('form');
-                if (form) {
-                    form.submit();
-                }
+                if (form) form.submit();
             }
         });
     });
