@@ -11,10 +11,9 @@
     
     <!-- Фильтры -->
     <div class="dropdown mb-3">
-        <button class="btn btn-secondary dropdown-toggle btn-dark" type="button" data-bs-toggle="dropdown"
-            aria-expanded="false">
-            Фильтры
-        </button>
+    <button class="btn btn-secondary btn-dark" type="button" id="filterToggleBtn">
+        <i class="bi bi-funnel"></i> Фильтры
+    </button>
 
         <form action="{% url 'order:my_orders' %}" method="get" class="dropdown-menu bg-dark" data-bs-theme="dark">
             <div class="p-3">
@@ -312,6 +311,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (techAccordion) {
         techAccordion.addEventListener('click', function(e) {
             e.stopPropagation();
+        });
+    }
+    const filterBtn = document.querySelector('#filterToggleBtn');
+    const filterPanel = document.querySelector('#filtersPanel');
+    if (filterBtn && filterPanel) {
+        filterBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            filterPanel.classList.toggle('show');
         });
     }
 });
