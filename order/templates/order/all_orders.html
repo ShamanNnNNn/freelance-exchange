@@ -362,11 +362,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Не сворачивать аккордеон при клике на чекбокс
-    document.querySelectorAll('.tech-row input[type="checkbox"]').forEach(cb => {
-        cb.addEventListener('click', function(e) {
+    const techAccordion = document.querySelector('#techAccordion');
+    if (techAccordion) {
+        techAccordion.addEventListener('click', function(e) {
             e.stopPropagation();
         });
-    });
+    }
 });
 </script>
 {% endblock %}
