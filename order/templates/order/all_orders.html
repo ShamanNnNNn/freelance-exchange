@@ -39,18 +39,6 @@
     <div class="collapse mt-2" id="filtersPanel">
         <form action="{% url 'order:all_orders' %}" method="get" class="bg-dark rounded p-4" data-bs-theme="dark">
             <div class="row">                
-                <!-- Сортировка -->
-                <div class="col-md-3 mb-3">
-                    <p class="text-white fw-bold">Сортировка</p>
-                    <select name="order_by" class="form-select">
-                        <option value="default" {% if not request.GET.order_by or request.GET.order_by == 'default' %}selected{% endif %}>По умолчанию</option>
-                        <option value="budget" {% if request.GET.order_by == 'budget' %}selected{% endif %}>Бюджет ↑</option>
-                        <option value="-budget" {% if request.GET.order_by == '-budget' %}selected{% endif %}>Бюджет ↓</option>
-                        <option value="deadline" {% if request.GET.order_by == 'deadline' %}selected{% endif %}>Срок ↑</option>
-                        <option value="-deadline" {% if request.GET.order_by == '-deadline' %}selected{% endif %}>Срок ↓</option>
-                    </select>
-                </div>
-
                 <div class="col-md-9 mb-3">
                     <p class="text-white fw-bold">Технологии</p>
                         <input type="text" class="form-control form-control-sm mb-2" id="techSearch" 
@@ -377,6 +365,11 @@ if (techSearch) {
                 group.style.display = '';
                 collapse.hide();
             }
+        });
+        document.querySelectorAll('.tech-row-my input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
         });
     });
 }

@@ -318,6 +318,11 @@ if (techSearchMyOrders) {
             else if (query && !hasMatch) { group.style.display = 'none'; }
             else { group.style.display = ''; collapse.hide(); }
         });
+        document.querySelectorAll('.tech-row-my input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
     });
 }
 </script>
