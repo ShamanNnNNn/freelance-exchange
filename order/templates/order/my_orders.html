@@ -285,9 +285,11 @@
         <p class="m-0 text-center text-white">Copyright &copy; Home Python Hub Studio 2023</p>
     </div>
 </footer>
+{% endblock %}
+
+{% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Поиск по технологиям
     const techSearchMyOrders = document.querySelector('#techSearchMyOrders');
     if (techSearchMyOrders) {
         techSearchMyOrders.addEventListener('input', function() {
@@ -307,15 +309,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    document.querySelector('#techSearchMyOrders').addEventListener('input', function() {
-    const query = this.value.toLowerCase().trim();
-    console.log('query:', query);
-    document.querySelectorAll('.lang-group-my').forEach(group => {
-        const rows = group.querySelectorAll('.tech-row-my');
-        console.log('group rows:', rows.length);
-        rows.forEach(row => console.log('row name:', row.dataset.name));
-    });
-});
 });
 </script>
 {% endblock %}
