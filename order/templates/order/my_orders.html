@@ -287,43 +287,33 @@
 </footer>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const categorySelect = document.querySelector('[name="category"]');
-    if (categorySelect) {
-        categorySelect.addEventListener('change', function() {
-            const selectedCategory = this.value;
-            document.querySelectorAll('.tech-checkbox').forEach(cb => {
-                const techCategory = cb.dataset.category;
-                cb.closest('.form-check').style.display =
-                    (!selectedCategory || techCategory == selectedCategory) ? '' : 'none';
+    // Поиск по технологиям
+    const techSearchMyOrders = document.querySelector('#techSearchMyOrders');
+    if (techSearchMyOrders) {
+        techSearchMyOrders.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            document.querySelectorAll('.lang-group-my').forEach(group => {
+                let hasMatch = false;
+                group.querySelectorAll('.tech-row-my').forEach(row => {
+                    const matches = !query || row.dataset.name.includes(query);
+                    row.style.display = matches ? '' : 'none';
+                    if (matches) hasMatch = true;
+                });
+                const collapseEl = group.querySelector('.accordion-collapse');
+                const collapse = bootstrap.Collapse.getOrCreateInstance(collapseEl, {toggle: false});
+                if (query && hasMatch) { collapse.show(); group.style.display = ''; }
+                else if (query && !hasMatch) { group.style.display = 'none'; }
+                else { group.style.display = ''; collapse.hide(); }
             });
         });
     }
-});
-</script>
-<script>
-const techSearchMyOrders = document.querySelector('#techSearchMyOrders');
-if (techSearchMyOrders) {
-    techSearchMyOrders.addEventListener('input', function() {
-        const query = this.value.toLowerCase().trim();
-        document.querySelectorAll('.lang-group-my').forEach(group => {
-            let hasMatch = false;
-            group.querySelectorAll('.tech-row-my').forEach(row => {
-                const matches = !query || row.dataset.name.includes(query);
-                row.style.display = matches ? '' : 'none';
-                if (matches) hasMatch = true;
-            });
-            const collapseEl = group.querySelector('.accordion-collapse');
-            const collapse = bootstrap.Collapse.getOrCreateInstance(collapseEl, {toggle: false});
-            if (query && hasMatch) { collapse.show(); group.style.display = ''; }
-            else if (query && !hasMatch) { group.style.display = 'none'; }
-            else { group.style.display = ''; collapse.hide(); }
-        });
-        document.querySelectorAll('.tech-row-my input[type="checkbox"]').forEach(cb => {
-            cb.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
+
+    // Не сворачивать аккордеон при клике на чекбокс
+    document.querySelectorAll('.tech-row-my input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('click', function(e) {
+            e.stopPropagation();
         });
     });
-}
+});
 </script>
 {% endblock %}
