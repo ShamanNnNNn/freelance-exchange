@@ -72,11 +72,11 @@
                         <div class="accordion-item bg-dark border-secondary lang-group-my">
                             <h2 class="accordion-header">
                                 <button class="accordion-button bg-dark text-white collapsed py-2" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#lang_my_{{ lang.slug }}">
+                                        data-bs-toggle="collapse" data-bs-target="#lang_my_{{ lang.slug|slugify }}">
                                     {{ lang.name }}
                                 </button>
                             </h2>
-                            <div id="lang_my_{{ lang.slug }}" class="accordion-collapse collapse">
+                            <div id="lang_my_{{ lang.slug|slugify }}" class="accordion-collapse collapse">
                                 <div class="accordion-body py-2">
                                     {% for tech in lang.technology_set.all %}
                                     <div class="form-check text-white mb-1 tech-row-my" data-name="{{ tech.name|lower }}">
