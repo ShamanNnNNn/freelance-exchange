@@ -307,21 +307,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-
-    const techAccordion = document.querySelector('#techAccordionMyOrders');
-    if (techAccordion) {
-        techAccordion.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-    }
-    const filterBtn = document.querySelector('#filterToggleBtn');
-    const filterPanel = document.querySelector('#filtersPanel');
-    if (filterBtn && filterPanel) {
-        filterBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            filterPanel.classList.toggle('show');
-        });
-    }
 });
 </script>
 {% endblock %}
