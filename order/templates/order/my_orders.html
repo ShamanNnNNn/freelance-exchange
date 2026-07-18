@@ -67,19 +67,39 @@
                     {% endfor %}
                 </select>
 
-                <p class="text-white">Технологии:</p>
-                {% for tech in technologies %}
-                <div class="form-check text-white mb-1">
-                    <input class="form-check-input tech-checkbox" type="checkbox"
-                        name="tech" value="{{ tech.slug }}"
-                        id="tech_{{ tech.slug }}"
-                        data-category="{{ tech.category.id }}"
-                        {% if tech.slug in selected_tech %}checked{% endif %}>
-                    <label class="form-check-label" for="tech_{{ tech.slug }}">
-                        {{ tech.name }}
-                    </label>
+<p class="text-white fw-bold">Технологии</p>
+<input type="text" class="form-control form-control-sm mb-2" id="techSearchMyOrders"
+    placeholder="Поиск технологии...">
+
+<div class="tech-scroll-container">
+    <div class="accordion" id="techAccordionMyOrders">
+        {% for lang in languages %}
+        <div class="accordion-item bg-dark border-secondary lang-group-my">
+            <h2 class="accordion-header">
+                <button class="accordion-button bg-dark text-white collapsed py-2" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#lang_my_{{ lang.slug }}">
+                    {{ lang.name }}
+                </button>
+            </h2>
+            <div id="lang_my_{{ lang.slug }}" class="accordion-collapse collapse">
+                <div class="accordion-body py-2">
+                    {% for tech in lang.technology_set.all %}
+                    <div class="form-check text-white mb-1 tech-row-my" data-name="{{ tech.name|lower }}">
+                        <input class="form-check-input" type="checkbox"
+                            name="tech" value="{{ tech.slug }}"
+                            id="tech_my_{{ tech.slug }}"
+                            {% if tech.slug in selected_tech %}checked{% endif %}>
+                        <label class="form-check-label" for="tech_my_{{ tech.slug }}">
+                            {{ tech.name }}
+                        </label>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
                 <button type="submit" class="btn btn-primary w-100 mt-3">Применить фильтры</button>
             </div>
@@ -279,5 +299,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+</script>
+<script>
+const techSearchMyOrders = document.querySelector('#techSearchMyOrders');
+if (techSearchMyOrders) {
+    techSearchMyOrders.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        document.querySelectorAll('.lang-group-my').forEach(group => {
+            let hasMatch = false;
+            group.querySelectorAll('.tech-row-my').forEach(row => {
+                const matches = !query || row.dataset.name.includes(query);
+                row.style.display = matches ? '' : 'none';
+                if (matches) hasMatch = true;
+            });
+            const collapseEl = group.querySelector('.accordion-collapse');
+            const collapse = bootstrap.Collapse.getOrCreateInstance(collapseEl, {toggle: false});
+            if (query && hasMatch) { collapse.show(); group.style.display = ''; }
+            else if (query && !hasMatch) { group.style.display = 'none'; }
+            else { group.style.display = ''; collapse.hide(); }
+        });
+    });
+}
 </script>
 {% endblock %}
