@@ -307,6 +307,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    document.querySelector('#techSearchMyOrders').addEventListener('input', function() {
+    const query = this.value.toLowerCase().trim();
+    console.log('query:', query);
+    document.querySelectorAll('.lang-group-my').forEach(group => {
+        const rows = group.querySelectorAll('.tech-row-my');
+        console.log('group rows:', rows.length);
+        rows.forEach(row => console.log('row name:', row.dataset.name));
+    });
+});
 });
 </script>
 {% endblock %}
