@@ -327,9 +327,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return col;
     });
     
-    // Средняя колонка смещена вниз
-    cols[1].style.marginTop = '120px';
-    
     // Раскладываем карточки по колонкам
     cards.forEach((card, i) => {
         cols[i % 3].appendChild(card);
