@@ -948,9 +948,9 @@ body.modal-open .modal {
 .orders-masonry {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .order-card-wrap:nth-child(3n+2) {
-  margin-top: 2rem;
+  margin-top: 1rem; 
 }
