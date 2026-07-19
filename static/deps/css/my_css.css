@@ -23,24 +23,9 @@
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--bg-base);
-  background-image: url("../images/bg-image.jpg");
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-position: center center;
-  background-size: cover;
   color: var(--text-primary);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-}
-
-/* Тёмный оверлей поверх фона */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: rgba(8, 8, 16, 0.82);
-  z-index: 0;
-  pointer-events: none;
 }
 
 /* Всё содержимое поверх оверлея */
