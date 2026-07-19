@@ -303,6 +303,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const masonry = document.querySelector('.orders-masonry');
+    if (!masonry) return;
+    
+    const cards = Array.from(masonry.querySelectorAll('.order-card-wrap'));
+    if (cards.length === 0) return;
+    
+    // Создаём три колонки
+    masonry.innerHTML = '';
+    masonry.style.display = 'flex';
+    masonry.style.gap = '0.5rem';
+    masonry.style.alignItems = 'flex-start';
+    
+    const cols = [0, 1, 2].map(() => {
+        const col = document.createElement('div');
+        col.style.flex = '1';
+        col.style.display = 'flex';
+        col.style.flexDirection = 'column';
+        col.style.gap = '0.5rem';
+        masonry.appendChild(col);
+        return col;
+    });
+    
+    // Средняя колонка смещена вниз
+    cols[1].style.marginTop = '120px';
+    
+    // Раскладываем карточки по колонкам
+    cards.forEach((card, i) => {
+        cols[i % 3].appendChild(card);
+    });
+});
+</script>
 {% endblock %}
 
 {% block footer %}
