@@ -273,6 +273,38 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Поиск по технологиям
+    const techSearch = document.querySelector('#techSearch');
+    if (techSearch) {
+        techSearch.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            document.querySelectorAll('.lang-group').forEach(group => {
+                let hasMatch = false;
+                group.querySelectorAll('.tech-row').forEach(row => {
+                    const matches = !query || row.dataset.name.includes(query);
+                    row.style.display = matches ? '' : 'none';
+                    if (matches) hasMatch = true;
+                });
+                const collapseEl = group.querySelector('.accordion-collapse');
+                const collapse = bootstrap.Collapse.getOrCreateInstance(collapseEl, {toggle: false});
+                if (query && hasMatch) { collapse.show(); group.style.display = ''; }
+                else if (query && !hasMatch) { group.style.display = 'none'; }
+                else { group.style.display = ''; collapse.hide(); }
+            });
+        });
+    }
+
+    // Не сворачивать аккордеон при клике на чекбокс
+    const techAccordion = document.querySelector('#techAccordion');
+    if (techAccordion) {
+        techAccordion.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
     const masonry = document.querySelector('.orders-masonry');
     if (!masonry) return;
     
