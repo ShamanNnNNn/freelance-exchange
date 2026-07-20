@@ -778,19 +778,6 @@ body.modal-open .modal {
     font-size: 1.8rem;
   }
 }
-/* ===== НОВЫЕ КАРТОЧКИ ЗАКАЗОВ ===== */
-.orders-masonry {
-  columns: 3;
-  column-gap: 1rem;
-}
-
-@media (max-width: 992px) {
-  .orders-masonry { columns: 2; }
-}
-
-@media (max-width: 576px) {
-  .orders-masonry { columns: 1; }
-}
 
 .order-card-wrap {
   break-inside: avoid;
@@ -945,12 +932,17 @@ body.modal-open .modal {
   color: #34d399;
   border: 1px solid rgba(16,185,129,0.25);
 }
-.orders-masonry {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.1rem;
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 24px;
+    align-items: start;
 }
 
-.order-card-wrap:nth-child(3n+2) {
-  margin-top: 120px;
+.order-card-wrap {
+    width: 100%;
+}
+
+.order-card-new {
+    height: 100%;
 }
