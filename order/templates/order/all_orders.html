@@ -110,7 +110,7 @@
 </div>
     
     <!-- Вывод заказов — шахматный порядок -->
-    <div class="orders-masonry">
+    <div class="orders-grid">
         {% for order in orders %}
         <div class="order-card-wrap">
             <div class="order-card-new">
@@ -300,43 +300,6 @@ document.addEventListener('DOMContentLoaded', function() {
         techAccordion.addEventListener('click', function(e) {
             e.stopPropagation();
         });
-    }
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const masonry = document.querySelector('.orders-masonry');
-    if (!masonry) return;
-    
-    const cards = Array.from(masonry.querySelectorAll('.order-card-wrap'));
-    if (cards.length === 0) return;
-    
-    masonry.innerHTML = '';
-    masonry.style.display = 'flex';
-    masonry.style.gap = '0.5rem';
-    masonry.style.alignItems = 'flex-start';
-    
-    const cols = [0, 1, 2].map(() => {
-        const col = document.createElement('div');
-        col.style.flex = '1';
-        col.style.display = 'flex';
-        col.style.flexDirection = 'column';
-        col.style.gap = '0.5rem';
-        masonry.appendChild(col);
-        return col;
-    });
-    
-    // Раскладываем все карточки по колонкам
-    cards.forEach((card, i) => {
-        cols[i % 3].appendChild(card);
-    });
-    
-    // Добавляем смещение средней колонки после первой карточки
-    const firstMiddleCard = cols[1].querySelector('.order-card-wrap');
-    if (firstMiddleCard && firstMiddleCard.nextSibling) {
-        const spacer = document.createElement('div');
-        //spacer.style.height = '120px';
-        cols[1].insertBefore(spacer, firstMiddleCard.nextSibling);
     }
 });
 </script>
