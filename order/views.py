@@ -173,7 +173,7 @@ class MyOrdersListView(LoginRequiredMixin, ListView):
         user_orders = Order.objects.filter(
             Q(customer=self.request.user) |
             Q(freelancer=self.request.user)
-        )
+        ).exclude(status='canceled')
 
         context['my_all_count'] = user_orders.count()
         context['my_open_count'] = user_orders.filter(status='open').count()
