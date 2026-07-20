@@ -273,45 +273,12 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Поиск по технологиям
-    const techSearch = document.querySelector('#techSearch');
-    if (techSearch) {
-        techSearch.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
-            document.querySelectorAll('.lang-group').forEach(group => {
-                let hasMatch = false;
-                group.querySelectorAll('.tech-row').forEach(row => {
-                    const matches = !query || row.dataset.name.includes(query);
-                    row.style.display = matches ? '' : 'none';
-                    if (matches) hasMatch = true;
-                });
-                const collapseEl = group.querySelector('.accordion-collapse');
-                const collapse = bootstrap.Collapse.getOrCreateInstance(collapseEl, {toggle: false});
-                if (query && hasMatch) { collapse.show(); group.style.display = ''; }
-                else if (query && !hasMatch) { group.style.display = 'none'; }
-                else { group.style.display = ''; collapse.hide(); }
-            });
-        });
-    }
-
-    // Не сворачивать аккордеон при клике на чекбокс
-    const techAccordion = document.querySelector('#techAccordion');
-    if (techAccordion) {
-        techAccordion.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-    }
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
     const masonry = document.querySelector('.orders-masonry');
     if (!masonry) return;
     
     const cards = Array.from(masonry.querySelectorAll('.order-card-wrap'));
     if (cards.length === 0) return;
     
-    // Создаём три колонки
     masonry.innerHTML = '';
     masonry.style.display = 'flex';
     masonry.style.gap = '0.5rem';
@@ -327,10 +294,18 @@ document.addEventListener('DOMContentLoaded', function() {
         return col;
     });
     
-    // Раскладываем карточки по колонкам
+    // Раскладываем все карточки по колонкам
     cards.forEach((card, i) => {
         cols[i % 3].appendChild(card);
     });
+    
+    // Добавляем смещение средней колонки после первой карточки
+    const firstMiddleCard = cols[1].querySelector('.order-card-wrap');
+    if (firstMiddleCard && firstMiddleCard.nextSibling) {
+        const spacer = document.createElement('div');
+        spacer.style.height = '120px';
+        cols[1].insertBefore(spacer, firstMiddleCard.nextSibling);
+    }
 });
 </script>
 {% endblock %}
