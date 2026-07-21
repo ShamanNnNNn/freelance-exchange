@@ -130,7 +130,7 @@ class MyOrdersListView(LoginRequiredMixin, ListView):
     model = Order
     template_name = 'order/my_orders.html'
     context_object_name = 'orders'
-    paginate_by = 12
+    paginate_by = 3
 
     def get_queryset(self):
         queryset = Order.objects.filter(
