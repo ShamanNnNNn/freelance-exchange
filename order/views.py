@@ -183,11 +183,8 @@ class MyOrdersListView(LoginRequiredMixin, ListView):
         context['title'] = 'Мои заказы'
 
         # Добавляем информацию о роли пользователя
-        orders_with_role = []
         for order in context['orders']:
             order.user_role = 'customer' if order.customer == self.request.user else 'freelancer'
-            orders_with_role.append(order)
-        context['orders'] = orders_with_role
 
         return context
 
