@@ -218,6 +218,7 @@
     </div>
     
     <!-- Пагинация -->
+    <p>Страница {{ orders.number }} из {{ orders.paginator.num_pages }}, всего {{ paginator.count }}</p>
     {% if orders.has_other_pages %}
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-center my-4">
